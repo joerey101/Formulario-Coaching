@@ -1,0 +1,73 @@
+.landing-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: 
+    radial-gradient(circle at 10% 20%, rgba(109, 74, 143, 0.05) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(82, 111, 92, 0.05) 0%, transparent 40%),
+    var(--bg);
+}
+
+.landing-header {
+  padding: 40px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.logo-placeholder {
+  font-size: 24px;
+  font-weight: 950;
+  letter-spacing: 0.2em;
+  color: var(--accent-dark);
+}
+
+.landing-hero {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.hero-card {
+  max-width: 800px;
+  padding: 60px;
+  text-align: center;
+}
+
+.hero-card h1 {
+  margin-bottom: 24px;
+}
+
+.hero-card p {
+  font-size: 20px;
+  color: var(--muted);
+  margin-bottom: 40px;
+}
+
+.btn-landing {
+  display: inline-block;
+  padding: 16px 32px;
+  background: var(--accent);
+  color: white;
+  text-decoration: none;
+  border-radius: var(--radius-pill);
+  font-weight: 850;
+  box-shadow: var(--shadow-accent);
+  transition: transform var(--transition-fast);
+}
+
+.btn-landing:hover {
+  transform: translateY(-2px);
+}
+
+.landing-footer {
+  padding: 40px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .hero-card { padding: 30px; }
+}
