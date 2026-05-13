@@ -1,0 +1,109 @@
+.main-content { padding-bottom: 72px; }
+
+.panel { padding: 24px; margin-bottom: 20px; }
+
+/* ── Principles ── */
+.principles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.principle {
+  border: 1px solid var(--line);
+  background: #fffdf9;
+  border-radius: 18px;
+  padding: 16px;
+}
+
+.principle strong { display: block; margin-bottom: 6px; }
+
+/* ── Meta grid ── */
+.meta-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+
+/* ── Summary ── */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.summary-box {
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 18px;
+  padding: 16px;
+}
+
+.summary-box.amber { background: var(--amber-soft); }
+.summary-box.green { background: var(--green-soft); }
+.summary-box.rose  { background: var(--rose-soft); }
+
+.summary-box small {
+  display: block;
+  color: var(--muted);
+  font-weight: 850;
+  margin-bottom: 5px;
+}
+
+.summary-box strong {
+  font-size: 24px;
+  letter-spacing: -0.04em;
+}
+
+.summary-box ul {
+  padding-left: 18px;
+  margin-bottom: 0;
+  color: #4d4a48;
+}
+
+.helper-text {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* ── Nav grid ── */
+.nav-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.nav-grid a {
+  text-decoration: none;
+  color: var(--accent-dark);
+  background: #fff;
+  border: 1px solid var(--line);
+  padding: 12px 13px;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 850;
+  transition: all var(--transition-fast);
+}
+
+.nav-grid a:hover {
+  background: var(--accent-soft);
+  border-color: rgba(109, 74, 143, 0.3);
+  transform: translateY(-1px);
+}
+
+/* ── Footer ── */
+.footer-note {
+  color: var(--muted);
+  text-align: center;
+  font-size: 14px;
+  margin-top: 24px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .principles, .summary-grid, .meta-grid { grid-template-columns: 1fr; }
+  .nav-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

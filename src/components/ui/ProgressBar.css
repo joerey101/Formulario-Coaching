@@ -1,0 +1,27 @@
+.progress-container {
+  flex: 1;
+}
+
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 850;
+  margin-bottom: 7px;
+}
+
+.progress-track {
+  height: 10px;
+  border-radius: var(--radius-pill);
+  background: #e5ded4;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent), var(--green));
+  transition: width var(--transition-normal);
+}

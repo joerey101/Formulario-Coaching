@@ -1,0 +1,27 @@
+.sticky-actions {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 14px;
+  background: rgba(247, 243, 237, 0.92);
+  border: 1px solid var(--line);
+  border-radius: 0 0 22px 22px;
+  backdrop-filter: blur(14px);
+}
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+@media (max-width: 900px) {
+  .sticky-actions { grid-template-columns: 1fr; }
+  .button-row { justify-content: flex-start; }
+}

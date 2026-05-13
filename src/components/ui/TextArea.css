@@ -1,0 +1,14 @@
+.textarea-field {
+  padding: 22px 0;
+  border-top: 1px solid var(--line);
+}
+
+.textarea-field:first-child {
+  border-top: 0;
+}
+
+.helper {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 13px;
+}

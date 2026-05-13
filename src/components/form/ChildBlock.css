@@ -1,0 +1,11 @@
+.child-block {
+  margin: 14px 0;
+  border: 1px dashed var(--line);
+  border-radius: 18px;
+  padding: 16px;
+  background: #fffdf9;
+}
+
+.child-block h3 {
+  margin-bottom: 12px;
+}

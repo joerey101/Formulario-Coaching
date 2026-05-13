@@ -1,0 +1,51 @@
+.header { padding: 46px 0 22px; }
+
+.hero {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 22px;
+  align-items: stretch;
+}
+
+.hero-main { padding: 34px; }
+.hero-side { padding: 26px; }
+
+.eyebrow {
+  display: inline-flex;
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+  font-size: 13px;
+  font-weight: 850;
+  letter-spacing: 0.02em;
+  margin-bottom: 18px;
+}
+
+.subtitle {
+  margin: 16px 0 0;
+  color: var(--muted);
+  font-size: 18px;
+  max-width: 880px;
+}
+
+.pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.pill {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  padding: 8px 11px;
+  font-size: 13px;
+  font-weight: 800;
+  background: #fff;
+  color: #44413f;
+}
+
+@media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr; }
+}

@@ -1,0 +1,94 @@
+/* ═══════════════════════════════════════════════
+   Global Styles — Formulario de Autoobservación 360°
+   ═══════════════════════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800;850;900;950&display=swap');
+@import './tokens.css';
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  font-family: var(--font-family);
+  color: var(--text);
+  background:
+    radial-gradient(circle at top left, rgba(239, 231, 247, 0.9), transparent 34%),
+    radial-gradient(circle at top right, rgba(231, 239, 232, 0.8), transparent 32%),
+    var(--bg);
+  line-height: var(--line-height);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* ── Layout containers ── */
+.container {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+/* ── Card base ── */
+.card {
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(228, 221, 210, 0.96);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(14px);
+}
+
+/* ── Typography ── */
+h1, h2, h3, h4, h5, h6 {
+  letter-spacing: -0.025em;
+  margin: 0;
+}
+
+h1 {
+  font-size: clamp(38px, 6vw, 72px);
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+  color: #1d181f;
+}
+
+h2 { font-size: 25px; }
+h3 { font-size: 18px; }
+p { margin-top: 0; }
+
+/* ── Form elements ── */
+input, textarea, select {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font: inherit;
+  background: #fff;
+  color: var(--text);
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+textarea { min-height: 104px; resize: vertical; }
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(109, 74, 143, 0.12);
+}
+
+label {
+  display: block;
+  font-weight: 800;
+  font-size: 14px;
+  margin-bottom: 8px;
+  color: #303029;
+}
+
+/* ── Print ── */
+@media print {
+  body { background: #fff; }
+  .container { width: 100%; margin: 0; }
+  .no-print { display: none !important; }
+  .card { box-shadow: none; break-inside: avoid; }
+}
