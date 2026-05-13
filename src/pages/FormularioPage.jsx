@@ -42,10 +42,14 @@ export default function FormularioPage() {
         {/* ── Datos iniciales ── */}
         <section className="card panel">
           <h2>Datos iniciales</h2>
-          <div className="meta-grid">
+          <div className="meta-grid meta-grid-5">
             <div>
-              <label htmlFor="coachee_name">Nombre del coachee</label>
-              <input id="coachee_name" type="text" value={state.meta.coachee} onChange={(e) => setMeta('coachee', e.target.value)} />
+              <label htmlFor="coachee_nombre">Nombre del coachee</label>
+              <input id="coachee_nombre" type="text" value={state.meta.coachee_nombre} onChange={(e) => setMeta('coachee_nombre', e.target.value)} placeholder="Nombre" />
+            </div>
+            <div>
+              <label htmlFor="coachee_apellido">Apellido del coachee</label>
+              <input id="coachee_apellido" type="text" value={state.meta.coachee_apellido} onChange={(e) => setMeta('coachee_apellido', e.target.value)} placeholder="Apellido" />
             </div>
             <div>
               <label htmlFor="coach_name">Coach</label>

@@ -20,7 +20,8 @@ export function slug(text) {
 // ── Estado inicial ──
 const initialState = {
   meta: {
-    coachee: '',
+    coachee_nombre: '',
+    coachee_apellido: '',
     coach: '',
     fecha: new Date().toISOString().slice(0, 10),
     etapa: 'Yo Real-Actual'
@@ -76,7 +77,8 @@ export function FormProvider({ children }) {
 
   const collectData = useCallback(() => {
     return {
-      coachee: state.meta.coachee,
+      coachee_nombre: state.meta.coachee_nombre,
+      coachee_apellido: state.meta.coachee_apellido,
       coach: state.meta.coach,
       fecha: state.meta.fecha,
       etapa: state.meta.etapa,

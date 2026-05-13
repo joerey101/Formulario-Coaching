@@ -27,6 +27,10 @@
   margin-top: 16px;
 }
 
+.meta-grid-5 {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
 /* ── Summary ── */
 .summary-grid {
   display: grid;
