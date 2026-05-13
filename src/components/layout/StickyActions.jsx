@@ -11,11 +11,11 @@ export default function StickyActions() {
   const { state, submitData, clear, collectData } = useForm();
 
   const handleSubmit = async () => {
-    const success = await submitData();
-    if (success) {
+    const result = await submitData();
+    if (result.success) {
       alert('¡Formulario enviado al servidor exitosamente!');
     } else {
-      alert('Error al enviar el formulario. Intentá nuevamente.');
+      alert(`Error al enviar: ${result.error}`);
     }
   };
 

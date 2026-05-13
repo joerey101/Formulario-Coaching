@@ -95,13 +95,21 @@ export function FormProvider({ children }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
+      
+      const result = await response.json();
       const success = response.ok;
+      
       dispatch({ type: 'SUBMIT_END', success });
-      return success;
+      
+      if (!success) {
+        return { success: false, error: result.error || 'Error desconocido del servidor' };
+      }
+      
+      return { success: true };
     } catch (error) {
       console.error('Error de red:', error);
       dispatch({ type: 'SUBMIT_END', success: false });
-      return false;
+      return { success: false, error: 'Error de red: No se pudo conectar con el servidor.' };
     }
   }, [collectData]);
 
