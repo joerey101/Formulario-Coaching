@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { FormProvider } from './context/FormContext';
 import FormularioPage from './pages/FormularioPage';
+import AdminPage from './pages/AdminPage';
 
 export default function App() {
   return (
@@ -9,6 +10,9 @@ export default function App() {
         <Routes>
           {/* El formulario es la raíz del sitio, directo y sin vueltas */}
           <Route path="/" element={<FormularioPage />} />
+          
+          {/* Panel de Administración */}
+          <Route path="/admin" element={<AdminPage />} />
           
           {/* Por si alguien escribe la URL completa */}
           <Route path="/formulariocoaching" element={<FormularioPage />} />
