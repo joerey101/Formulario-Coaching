@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import { SECCIONES, SECCIONES_ORDEN } from '../lib/respuestasSchema';
 import './AdminPage.css';
 
 export default function AdminPage() {
@@ -191,35 +192,45 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              <div className="detail-section">
-                <h3>Respuestas Detalladas</h3>
-                <div className="answers-container">
-                  {Object.entries(selectedItem.respuestas || {}).length > 0 ? (
-                    Object.entries(selectedItem.respuestas).map(([key, value]) => (
-                      <div key={key} className="answer-block">
-                        <label className="answer-label">
-                          {key.replace(/_/g, ' ')}
-                        </label>
-                        <div className="answer-content">
-                          {key.includes('_score') ? (
+              {SECCIONES_ORDEN.map(seccionKey => {
+                const seccion = SECCIONES[seccionKey];
+                const camposConValor = seccion.campos.filter(c => {
+                  const val = selectedItem.respuestas?.[c.key];
+                  return val !== undefined && val !== null && val !== '';
+                });
+                
+                if (camposConValor.length === 0) return null;
+                
+                return (
+                  <div key={seccionKey} className="seccion-respuestas">
+                    <h3 className="seccion-titulo">{seccion.titulo}</h3>
+                    <p className="seccion-descripcion">{seccion.descripcion}</p>
+                    {camposConValor.map(campo => (
+                      <div key={campo.key} className="campo-respuesta">
+                        <label className="campo-label">{campo.label}</label>
+                        <div className="campo-valor">
+                          {campo.tipo === 'score' ? (
                             <div className="score-bar-container">
-                              <div className="score-bar" style={{ width: `${value * 10}%` }}></div>
-                              <span className="score-text">{value} / 10</span>
+                              <div className="score-bar" style={{ width: `${selectedItem.respuestas[campo.key] * 10}%` }}></div>
+                              <span className="score-text">{selectedItem.respuestas[campo.key]} / 10</span>
+                            </div>
+                          ) : campo.tipo === 'lista' ? (
+                            <div className="lista-tags">
+                              {(selectedItem.respuestas[campo.key] || []).map((item, i) => (
+                                <span key={i} className="tag-item">{item}</span>
+                              ))}
                             </div>
                           ) : (
-                            Array.isArray(value) ? value.join(', ') : value
+                            <p className="texto-respuesta">{selectedItem.respuestas[campo.key]}</p>
                           )}
                         </div>
                       </div>
-                    ))
-                  ) : (
-                    <p className="empty-msg">No hay respuestas detalladas guardadas.</p>
-                  )}
-                </div>
-              </div>
+                    ))}
+                  </div>
+                );
+              })}
             </div>
             <div className="modal-footer">
-              <button onClick={() => window.print()} className="btn-secondary">Imprimir PDF</button>
               <button onClick={() => setSelectedItem(null)} className="btn-primary">Cerrar</button>
             </div>
           </div>
