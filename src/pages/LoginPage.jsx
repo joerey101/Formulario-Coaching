@@ -3,6 +3,8 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import './LoginPage.css';
 
+import Button from '../components/ui/Button';
+
 export default function LoginPage() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
@@ -67,9 +69,9 @@ export default function LoginPage() {
               required 
             />
           </div>
-          <button type="submit" className="btn-primary" disabled={loading}>
+          <Button type="submit" variant="primary" disabled={loading}>
             {loading ? 'Procesando...' : (isSignUp ? 'Registrarse' : 'Ingresar')}
-          </button>
+          </Button>
         </form>
 
         <div className="login-footer">

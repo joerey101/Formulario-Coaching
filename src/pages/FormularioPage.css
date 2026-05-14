@@ -133,6 +133,43 @@
   margin-top: 24px;
 }
 
+.footer-brand {
+  font-weight: 950;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  margin-top: 8px;
+  opacity: 0.6;
+}
+
+/* ── Intro Section ── */
+.panel-intro {
+  background: #f8f7ff;
+  border-left: 4px solid var(--accent);
+}
+
+.principles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-top: 24px;
+}
+
+.principle {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.principle strong {
+  font-size: 1rem;
+  color: var(--accent);
+}
+
+.principle span {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
 /* ── Responsive ── */
 @media (max-width: 900px) {
   .principles, .summary-grid, .meta-grid { grid-template-columns: 1fr; }
