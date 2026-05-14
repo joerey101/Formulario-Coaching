@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { useForm, DOMAIN_NAMES, slug } from '../context/FormContext';
 import { useAuth } from '../context/AuthContext';
-import Header from '../components/layout/Header';
 import StickyActions from '../components/layout/StickyActions';
 import SectionCard from '../components/form/SectionCard';
 import DomainCard from '../components/form/DomainCard';
@@ -389,7 +388,7 @@ export default function FormularioPage() {
       
       <footer className="footer-note">
         <p>Todo lo expresado aquí es confidencial y forma parte de tu proceso personal de transformación.</p>
-        <p className="footer-brand">CONSCIENCIA · Coaching de Transformación</p>
+        <p className="footer-brand">CONSCIENCIA · Coaching de Transformación (v2.1)</p>
       </footer>
     </div>
   );
