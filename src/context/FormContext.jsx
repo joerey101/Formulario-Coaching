@@ -132,6 +132,29 @@ export const FormProvider = ({ children }) => {
       }
       
       console.log('Guardado exitoso:', result);
+      
+      // ── Disparar notificación por mail (Edge Function + Resend) ──
+      try {
+        console.log('[MAIL] Intentando enviar notificación...');
+        const { error: funcError } = await supabase.functions.invoke('send-form-notification', {
+          body: {
+            coachee_nombre: data.coachee_nombre,
+            coachee_apellido: data.coachee_apellido,
+            email: data.email,
+            coach: data.coach
+          }
+        });
+        
+        if (funcError) {
+          console.error('[MAIL] Error de la función:', funcError);
+        } else {
+          console.log('[MAIL] Notificación enviada correctamente');
+        }
+      } catch (mailErr) {
+        // No bloqueamos el flujo principal si falla el mail
+        console.error('[MAIL] Fallo al disparar notificación:', mailErr);
+      }
+
       dispatch({ type: 'SUBMIT_END', success: true });
       return { success: true };
     } catch (error) {
