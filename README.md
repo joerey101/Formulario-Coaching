@@ -1,16 +1,30 @@
-# React + Vite
+# Formulario de Autoobservación - Coaching de Transformación
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Plataforma interactiva para el proceso de coaching, permitiendo a los coachees realizar un diagnóstico profundo de su "Yo Real" y permitiendo a los coaches gestionar y visualizar los resultados.
 
-Currently, two official plugins are available:
+## 🚀 Estado Actual: Migración a Supabase Auth & Resend Finalizada
+La plataforma ha sido migrada con éxito a un sistema de autenticación robusto y notificaciones automáticas.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+### Últimas Mejoras (14 Mayo 2026):
+- **Autenticación Segura**: Integración total con Supabase Auth.
+- **Roles Dinámicos**: Diferenciación automática entre Coach (Admin) y Coachee (Cliente).
+- **Notificaciones**: Sistema de aviso por mail al Coach (vía Resend) al recibir nuevas respuestas.
+- **Recuperación de Clave**: Flujo completo de "Olvidé mi contraseña".
 
-## React Compiler
+### Documentación Detallada:
+Para ver el detalle técnico de la migración y cómo mantener el sistema, revisá el archivo:
+👉 **[MIGRACION_AUTH_REPORTE_FINAL.md](./MIGRACION_AUTH_REPORTE_FINAL.md)**
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🛠️ Tecnologías
+- **Frontend**: React + Vite
+- **Estilos**: CSS Nativo (Premium Aesthetics)
+- **Backend**: Supabase (Auth, DB, Edge Functions)
+- **Email**: Resend
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 📦 Instalación y Configuración
+1. `npm install`
+2. Configurar `.env` local con las claves de Supabase.
+3. **Configuración de Backend (Supabase Secrets)**:
+    - `RESEND_API_KEY`: Tu clave de Resend.
+    - `SITE_URL`: URL base de la app para links dinámicos en mails.
+4. `npm run dev`
