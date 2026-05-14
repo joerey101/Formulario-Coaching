@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 import './AdminPage.css';
 
 export default function AdminPage() {
@@ -9,7 +10,6 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Manejo de Login (Simple para esta fase)
   const handleLogin = (e) => {
     e.preventDefault();
     if (user === 'JOrtiz' && pass === 'Poder2026!') {
@@ -23,11 +23,16 @@ export default function AdminPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/get-respuestas');
-      const data = await res.json();
-      setRespuestas(data);
+      const { data, error } = await supabase
+        .from('respuestas')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      setRespuestas(data || []);
     } catch (err) {
       console.error('Error cargando datos:', err);
+      alert('Error al cargar datos de Supabase');
     } finally {
       setLoading(false);
     }
