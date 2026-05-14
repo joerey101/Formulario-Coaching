@@ -1,25 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import './AdminPage.css';
 
 export default function AdminPage() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState('');
-  const [pass, setPass] = useState('');
+  const { coachData, signOut } = useAuth();
+  const navigate = useNavigate();
+  
   const [respuestas, setRespuestas] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedItem, setSelectedItem] = useState(null);
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    if (user === 'JOrtiz' && pass === 'Poder2026!') {
-      setIsAuthenticated(true);
-      fetchData();
-    } else {
-      alert('Credenciales incorrectas');
-    }
-  };
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const fetchData = async () => {
     setLoading(true);
@@ -33,14 +29,18 @@ export default function AdminPage() {
       setRespuestas(data || []);
     } catch (err) {
       console.error('Error cargando datos:', err);
-      // No alertar si es por falta de credenciales reales todavía
     } finally {
       setLoading(false);
     }
   };
 
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/login');
+  };
+
   const handleDelete = async (id) => {
-    if (!confirm('¿Seguro que querés eliminar este registro?')) return;
+    if (!window.confirm('¿Seguro que querés eliminar este registro?')) return;
     try {
       const { error } = await supabase.from('respuestas').delete().eq('id', id);
       if (error) {
@@ -84,33 +84,20 @@ export default function AdminPage() {
     `${r.coachee_nombre} ${r.coachee_apellido} ${r.email}`.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (!isAuthenticated) {
-    return (
-      <div className="admin-login-container">
-        <form className="card login-card" onSubmit={handleLogin}>
-          <div className="logo-text">ADMIN · CONSCIENCIA</div>
-          <h2>Panel de Control</h2>
-          <div className="form-group">
-            <label>Usuario</label>
-            <input type="text" value={user} onChange={e => setUser(e.target.value)} required />
-          </div>
-          <div className="form-group">
-            <label>Contraseña</label>
-            <input type="password" value={pass} onChange={e => setPass(e.target.value)} required />
-          </div>
-          <button type="submit" className="btn-primary">Ingresar al Sistema</button>
-        </form>
-      </div>
-    );
-  }
-
   return (
     <div className="admin-dashboard">
       <header className="admin-header">
         <div className="header-content">
           <div className="brand-group">
             <span className="brand-dot"></span>
-            <h1>Gestión de Coachees</h1>
+            <div>
+              <h1>Panel de Coach</h1>
+              {coachData && (
+                <p className="subtitle" style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                  {coachData.nombre} {coachData.apellido}
+                </p>
+              )}
+            </div>
           </div>
           <div className="actions-group">
             <div className="search-box">
@@ -122,7 +109,7 @@ export default function AdminPage() {
               />
             </div>
             <button onClick={handleExportCSV} className="btn-secondary">Exportar CSV</button>
-            <button onClick={() => setIsAuthenticated(false)} className="btn-logout">Cerrar Sesión</button>
+            <button onClick={handleLogout} className="btn-logout">Cerrar Sesión</button>
           </div>
         </div>
       </header>

@@ -61,6 +61,60 @@
   font-size: 1rem;
 }
 
+.reset-password-section {
+  margin-top: 20px;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.reset-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+  background: rgba(147, 51, 234, 0.05); /* Usamos el color de accent con opacidad */
+  padding: 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+
+.reset-form input {
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--text);
+  font-family: inherit;
+}
+
+.reset-btn {
+  width: 100%;
+  padding: 12px;
+  font-size: 0.95rem;
+}
+
+.cancel-btn {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.reset-message {
+  font-size: 0.85rem;
+  color: var(--text);
+  margin-top: 8px;
+  text-align: left;
+  line-height: 1.4;
+}
+
 .login-footer {
   margin-top: 32px;
   padding-top: 24px;
@@ -72,7 +126,7 @@
   color: var(--text-muted);
 }
 
-.login-footer button {
+.toggle-auth-btn {
   background: none;
   border: none;
   color: var(--accent);

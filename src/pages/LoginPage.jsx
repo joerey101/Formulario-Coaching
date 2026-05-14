@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+
 import './LoginPage.css';
 
 import Button from '../components/ui/Button';
@@ -10,8 +10,12 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn, signUp } = useAuth();
-  const navigate = useNavigate();
+  const { signIn, signUp, resetPassword } = useAuth();
+
+
+  const [showResetForm, setShowResetForm] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetMessage, setResetMessage] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,12 +29,26 @@ export default function LoginPage() {
       } else {
         const { error } = await signIn(email, password);
         if (error) throw error;
-        navigate('/');
+        // El redirect lo maneja PublicOnlyRoute en App.jsx según el rol del usuario
       }
     } catch (error) {
       alert(error.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    setResetMessage('');
+    const { error } = await resetPassword(resetEmail);
+    if (error) {
+      setResetMessage(`Error: ${error.message}`);
+    } else {
+      setResetMessage(
+        'Te enviamos un mail con instrucciones para resetear tu contraseña. ' +
+        'Revisá tu bandeja de entrada (y spam por las dudas).'
+      );
     }
   };
 
@@ -74,10 +92,37 @@ export default function LoginPage() {
           </Button>
         </form>
 
+        <div className="reset-password-section">
+          {!showResetForm ? (
+            <button
+              type="button"
+              className="link-button"
+              onClick={() => setShowResetForm(true)}
+            >
+              ¿Olvidaste tu contraseña?
+            </button>
+          ) : (
+            <form onSubmit={handleResetPassword} className="reset-form">
+              <input
+                type="email"
+                placeholder="Tu email"
+                value={resetEmail}
+                onChange={(e) => setResetEmail(e.target.value)}
+                required
+              />
+              <button type="submit" className="btn-primary reset-btn">Enviar mail de recuperación</button>
+              <button type="button" className="link-button cancel-btn" onClick={() => setShowResetForm(false)}>
+                Cancelar
+              </button>
+              {resetMessage && <p className="reset-message">{resetMessage}</p>}
+            </form>
+          )}
+        </div>
+
         <div className="login-footer">
           <p>
             {isSignUp ? '¿Ya tienes cuenta?' : '¿Sos nuevo?'}
-            <button onClick={() => setIsSignUp(!isSignUp)}>
+            <button onClick={() => setIsSignUp(!isSignUp)} className="toggle-auth-btn">
               {isSignUp ? 'Ingresar' : 'Crear cuenta'}
             </button>
           </p>
