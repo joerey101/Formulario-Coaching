@@ -104,6 +104,7 @@ export default function AdminPage() {
                 <tr>
                   <th>Fecha</th>
                   <th>Coachee</th>
+                  <th>Email</th>
                   <th>Coach</th>
                   <th>Etapa</th>
                   <th>Acciones</th>
@@ -114,8 +115,9 @@ export default function AdminPage() {
                   <tr key={item.id}>
                     <td>{new Date(item.created_at).toLocaleDateString()}</td>
                     <td><strong>{item.coachee_nombre} {item.coachee_apellido}</strong></td>
+                    <td style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>{item.email}</td>
                     <td>{item.coach || '-'}</td>
-                    <td><span className="badge">{item.etapa}</span></td>
+                    <td>{item.etapa}</td>
                     <td style={{ display: 'flex', gap: '8px' }}>
                       <button className="btn-view" onClick={() => setSelectedItem(item)}>
                         Ver Detalle

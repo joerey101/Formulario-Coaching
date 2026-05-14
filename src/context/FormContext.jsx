@@ -23,6 +23,7 @@ const initialState = {
   meta: {
     coachee_nombre: '',
     coachee_apellido: '',
+    email: '',
     coach: '',
     fecha: new Date().toISOString().slice(0, 10),
     etapa: 'Yo Real-Actual'
@@ -80,6 +81,7 @@ export function FormProvider({ children }) {
     return {
       coachee_nombre: state.meta.coachee_nombre,
       coachee_apellido: state.meta.coachee_apellido,
+      email: state.meta.email,
       coach: state.meta.coach,
       fecha: state.meta.fecha,
       etapa: state.meta.etapa,
@@ -87,23 +89,60 @@ export function FormProvider({ children }) {
     };
   }, [state]);
 
+  const loadProgress = useCallback(async (email) => {
+    if (!email) return;
+    try {
+      const { data, error } = await supabase
+        .from('respuestas')
+        .select('*')
+        .eq('email', email.toLowerCase().trim())
+        .maybeSingle();
+
+      if (error) throw error;
+      if (data) {
+        dispatch({
+          type: 'SET_ALL',
+          payload: {
+            meta: {
+              coachee_nombre: data.coachee_nombre,
+              coachee_apellido: data.coachee_apellido,
+              email: data.email,
+              coach: data.coach,
+              fecha: data.fecha,
+              etapa: data.etapa
+            },
+            respuestas: data.respuestas || {}
+          }
+        });
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error('Error cargando progreso:', err);
+      return false;
+    }
+  }, []);
+
   const submitData = useCallback(async () => {
     dispatch({ type: 'SUBMIT_START' });
     try {
       const data = collectData();
+      if (!data.email) throw new Error('El email es obligatorio para guardar el progreso.');
       
       const { error } = await supabase
         .from('respuestas')
-        .insert([
+        .upsert(
           {
+            email: data.email.toLowerCase().trim(),
             coachee_nombre: data.coachee_nombre,
             coachee_apellido: data.coachee_apellido,
             coach: data.coach,
             fecha: data.fecha,
             etapa: data.etapa,
             respuestas: data.respuestas
-          }
-        ]);
+          },
+          { onConflict: 'email' }
+        );
 
       if (error) throw error;
       
@@ -125,7 +164,8 @@ export function FormProvider({ children }) {
     setAll,
     clear,
     collectData,
-    submitData
+    submitData,
+    loadProgress
   };
 
   return (

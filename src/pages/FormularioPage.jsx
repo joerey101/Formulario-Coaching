@@ -44,12 +44,30 @@ export default function FormularioPage() {
           <h2>Datos iniciales</h2>
           <div className="meta-grid meta-grid-5">
             <div>
-              <label htmlFor="coachee_nombre">Nombre del coachee</label>
+              <label htmlFor="coachee_nombre">Nombre</label>
               <input id="coachee_nombre" type="text" value={state.meta.coachee_nombre} onChange={(e) => setMeta('coachee_nombre', e.target.value)} placeholder="Nombre" />
             </div>
             <div>
-              <label htmlFor="coachee_apellido">Apellido del coachee</label>
+              <label htmlFor="coachee_apellido">Apellido</label>
               <input id="coachee_apellido" type="text" value={state.meta.coachee_apellido} onChange={(e) => setMeta('coachee_apellido', e.target.value)} placeholder="Apellido" />
+            </div>
+            <div className="email-field">
+              <label htmlFor="email">Email (para recuperar progreso)</label>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input id="email" type="email" value={state.meta.email} onChange={(e) => setMeta('email', e.target.value)} placeholder="tu@email.com" />
+                <button 
+                  type="button" 
+                  className="btn-sync" 
+                  onClick={async () => {
+                    const found = await state.loadProgress(state.meta.email);
+                    if (found) alert('¡Progreso recuperado con éxito!');
+                    else alert('No se encontró progreso para este email.');
+                  }}
+                  title="Recuperar progreso guardado"
+                >
+                  🔄
+                </button>
+              </div>
             </div>
             <div>
               <label htmlFor="coach_name">Coach</label>
@@ -58,10 +76,6 @@ export default function FormularioPage() {
             <div>
               <label htmlFor="date_completed">Fecha</label>
               <input id="date_completed" type="date" value={state.meta.fecha} onChange={(e) => setMeta('fecha', e.target.value)} />
-            </div>
-            <div>
-              <label htmlFor="process_stage">Etapa</label>
-              <input id="process_stage" type="text" value={state.meta.etapa} onChange={(e) => setMeta('etapa', e.target.value)} />
             </div>
           </div>
         </section>
