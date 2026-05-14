@@ -2,6 +2,25 @@ import { createContext, useContext, useReducer, useCallback, useEffect } from 'r
 import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
 
+// ── Helpers ──
+export const DOMAIN_NAMES = [
+  'Vínculos y Relaciones',
+  'Salud y Vitalidad',
+  'Propósito y Carrera',
+  'Finanzas y Abundancia',
+  'Entorno y Estilo de Vida'
+];
+
+export function slug(text) {
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '_')
+    .replace(/^_|_$/g, '');
+}
+
 const FormContext = createContext(null);
 
 export const FormProvider = ({ children }) => {
