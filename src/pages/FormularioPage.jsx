@@ -53,8 +53,14 @@ export default function FormularioPage() {
             </div>
             <div className="email-field">
               <label htmlFor="email">Email (para recuperar progreso)</label>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <input id="email" type="email" value={state.meta.email} onChange={(e) => setMeta('email', e.target.value)} placeholder="tu@email.com" />
+              <div className="email-field-wrapper">
+                <input 
+                  id="email" 
+                  type="email" 
+                  value={state.meta.email} 
+                  onChange={(e) => setMeta('email', e.target.value)} 
+                  placeholder="tu@email.com" 
+                />
                 <button 
                   type="button" 
                   className="btn-sync" 

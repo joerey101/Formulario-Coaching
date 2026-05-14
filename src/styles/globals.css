@@ -10,79 +10,61 @@ html { scroll-behavior: smooth; }
 
 body {
   margin: 0;
-  font-family: var(--font-family);
+  font-family: var(--font-main);
   color: var(--text);
-  background:
-    radial-gradient(circle at top left, rgba(239, 231, 247, 0.9), transparent 34%),
-    radial-gradient(circle at top right, rgba(231, 239, 232, 0.8), transparent 32%),
-    var(--bg);
-  line-height: var(--line-height);
+  background: var(--bg);
+  background-attachment: fixed;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 #root {
   min-height: 100vh;
 }
 
-/* ── Layout containers ── */
+/* ── Layout ── */
 .container {
-  width: min(1180px, calc(100% - 32px));
+  width: min(1000px, calc(100% - 40px));
   margin: 0 auto;
 }
 
-/* ── Card base ── */
+/* ── Card (Glassmorphism sutil) ── */
 .card {
-  background: rgba(255, 255, 255, 0.86);
-  border: 1px solid rgba(228, 221, 210, 0.96);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  backdrop-filter: blur(14px);
+  overflow: hidden;
 }
 
-/* ── Typography ── */
-h1, h2, h3, h4, h5, h6 {
-  letter-spacing: -0.025em;
-  margin: 0;
-}
-
-h1 {
-  font-size: clamp(38px, 6vw, 72px);
-  line-height: 0.95;
-  letter-spacing: -0.06em;
-  color: #1d181f;
-}
-
-h2 { font-size: 25px; }
-h3 { font-size: 18px; }
-p { margin-top: 0; }
-
-/* ── Form elements ── */
+/* ── Form Elements ── */
 input, textarea, select {
   width: 100%;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  padding: 12px 14px;
-  font: inherit;
-  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 10px 16px;
+  font-size: 0.95rem;
+  font-family: inherit;
   color: var(--text);
-  outline: none;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  background: #ffffff;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-inner);
 }
-
-textarea { min-height: 104px; resize: vertical; }
 
 input:focus, textarea:focus, select:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 4px rgba(109, 74, 143, 0.12);
+  outline: none;
+  box-shadow: 0 0 0 4px var(--accent-soft), var(--shadow-inner);
 }
 
 label {
   display: block;
-  font-weight: 800;
-  font-size: 14px;
-  margin-bottom: 8px;
-  color: #303029;
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
 }
 
 /* ── Print ── */
