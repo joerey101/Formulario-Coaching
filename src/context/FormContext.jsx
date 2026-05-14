@@ -1,4 +1,9 @@
 import { createContext, useContext, useReducer, useCallback } from 'react';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 const FormContext = createContext(null);
 
@@ -90,26 +95,28 @@ export function FormProvider({ children }) {
     dispatch({ type: 'SUBMIT_START' });
     try {
       const data = collectData();
-      const response = await fetch('/api/respuestas', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
       
-      const result = await response.json();
-      const success = response.ok;
+      const { error } = await supabase
+        .from('respuestas')
+        .insert([
+          {
+            coachee_nombre: data.coachee_nombre,
+            coachee_apellido: data.coachee_apellido,
+            coach: data.coach,
+            fecha: data.fecha,
+            etapa: data.etapa,
+            respuestas: data.respuestas
+          }
+        ]);
+
+      if (error) throw error;
       
-      dispatch({ type: 'SUBMIT_END', success });
-      
-      if (!success) {
-        return { success: false, error: result.error || 'Error desconocido del servidor' };
-      }
-      
+      dispatch({ type: 'SUBMIT_END', success: true });
       return { success: true };
     } catch (error) {
-      console.error('Error de red:', error);
+      console.error('Error Supabase:', error);
       dispatch({ type: 'SUBMIT_END', success: false });
-      return { success: false, error: 'Error de red: No se pudo conectar con el servidor.' };
+      return { success: false, error: error.message || 'Error al conectar con la base de datos' };
     }
   }, [collectData]);
 
