@@ -103,7 +103,13 @@ export const FormProvider = ({ children }) => {
     try {
       const data = collectData();
       
-      const { error } = await supabase
+      if (!data.user_id) {
+        throw new Error('No hay una sesión de usuario activa. Por favor, volvé a ingresar.');
+      }
+
+      console.log('Intentando guardar datos para:', data.email, 'ID:', data.user_id);
+
+      const { error, data: result } = await supabase
         .from('respuestas')
         .upsert(
           {
@@ -117,16 +123,24 @@ export const FormProvider = ({ children }) => {
             respuestas: data.respuestas
           },
           { onConflict: 'email' }
-        );
+        )
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error detallado de Supabase:', error);
+        throw error;
+      }
       
+      console.log('Guardado exitoso:', result);
       dispatch({ type: 'SUBMIT_END', success: true });
       return { success: true };
     } catch (error) {
-      console.error('Error Supabase:', error);
+      console.error('Error en submitData:', error);
       dispatch({ type: 'SUBMIT_END', success: false });
-      return { success: false, error: error.message || 'Error al conectar con la base de datos' };
+      return { 
+        success: false, 
+        error: error.message || 'Error desconocido al guardar' 
+      };
     }
   }, [collectData]);
 
