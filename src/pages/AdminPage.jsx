@@ -43,10 +43,13 @@ export default function AdminPage() {
     if (!confirm('¿Seguro que querés eliminar este registro?')) return;
     try {
       const { error } = await supabase.from('respuestas').delete().eq('id', id);
-      if (error) throw error;
+      if (error) {
+        alert(`Error de base de datos: ${error.message}. Probablemente necesites habilitar los permisos de DELETE en Supabase.`);
+        return;
+      }
       setRespuestas(respuestas.filter(r => r.id !== id));
     } catch (err) {
-      alert('Error al eliminar');
+      alert('Error inesperado al eliminar');
     }
   };
 
