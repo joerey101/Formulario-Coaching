@@ -42,7 +42,7 @@ export default function FormularioPage() {
         {/* ── Datos iniciales ── */}
         <section className="card panel">
           <h2>Datos iniciales</h2>
-          <div className="meta-grid meta-grid-5">
+          <div className="meta-grid">
             <div>
               <label htmlFor="coachee_nombre">Nombre</label>
               <input id="coachee_nombre" type="text" value={state.meta.coachee_nombre} onChange={(e) => setMeta('coachee_nombre', e.target.value)} placeholder="Nombre" />
@@ -52,7 +52,7 @@ export default function FormularioPage() {
               <input id="coachee_apellido" type="text" value={state.meta.coachee_apellido} onChange={(e) => setMeta('coachee_apellido', e.target.value)} placeholder="Apellido" />
             </div>
             <div className="email-field">
-              <label htmlFor="email">Email (para recuperar progreso)</label>
+              <label htmlFor="email">Email de Seguimiento</label>
               <div className="email-field-wrapper">
                 <input 
                   id="email" 
@@ -75,9 +75,11 @@ export default function FormularioPage() {
                 </button>
               </div>
             </div>
+          </div>
+          <div className="meta-grid" style={{ marginTop: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 0.5fr))' }}>
             <div>
               <label htmlFor="coach_name">Coach</label>
-              <input id="coach_name" type="text" value={state.meta.coach} onChange={(e) => setMeta('coach', e.target.value)} />
+              <input id="coach_name" type="text" value={state.meta.coach} onChange={(e) => setMeta('coach', e.target.value)} placeholder="Nombre del Coach" />
             </div>
             <div>
               <label htmlFor="date_completed">Fecha</label>
