@@ -9,6 +9,7 @@ export default function AdminPage() {
   const [respuestas, setRespuestas] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedItem, setSelectedItem] = useState(null);
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -35,6 +36,17 @@ export default function AdminPage() {
       alert('Error al cargar datos de Supabase');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!confirm('¿Seguro que querés eliminar este registro?')) return;
+    try {
+      const { error } = await supabase.from('respuestas').delete().eq('id', id);
+      if (error) throw error;
+      setRespuestas(respuestas.filter(r => r.id !== id));
+    } catch (err) {
+      alert('Error al eliminar');
     }
   };
 
@@ -101,9 +113,12 @@ export default function AdminPage() {
                     <td><strong>{item.coachee_nombre} {item.coachee_apellido}</strong></td>
                     <td>{item.coach || '-'}</td>
                     <td><span className="badge">{item.etapa}</span></td>
-                    <td>
-                      <button className="btn-view" onClick={() => alert('Próximamente: Detalle completo')}>
+                    <td style={{ display: 'flex', gap: '8px' }}>
+                      <button className="btn-view" onClick={() => setSelectedItem(item)}>
                         Ver Detalle
+                      </button>
+                      <button className="btn-view" style={{ color: 'var(--rose)', borderColor: 'var(--rose)' }} onClick={() => handleDelete(item.id)}>
+                        Borrar
                       </button>
                     </td>
                   </tr>
@@ -114,6 +129,45 @@ export default function AdminPage() {
           </div>
         )}
       </main>
+
+      {/* Modal de Detalle */}
+      {selectedItem && (
+        <div className="modal-overlay" onClick={() => setSelectedItem(null)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Respuestas de {selectedItem.coachee_nombre}</h2>
+              <button className="btn-close" onClick={() => setSelectedItem(null)}>&times;</button>
+            </div>
+            <div className="modal-body">
+              <div className="detail-section">
+                <h3>Metadatos</h3>
+                <div className="meta-grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)', gap: '15px' }}>
+                  <p><strong>Fecha:</strong> {selectedItem.fecha}</p>
+                  <p><strong>Coach:</strong> {selectedItem.coach}</p>
+                  <p><strong>Etapa:</strong> {selectedItem.etapa}</p>
+                </div>
+              </div>
+
+              <div className="detail-section">
+                <h3>Respuestas del Formulario</h3>
+                {Object.entries(selectedItem.respuestas || {}).length > 0 ? (
+                  Object.entries(selectedItem.respuestas).map(([key, value]) => (
+                    <div key={key} className="answer-item">
+                      <span className="answer-label">
+                        {key.replace(/_/g, ' ')} 
+                        {key.includes('_score') && <span className="score-badge">{value}/10</span>}
+                      </span>
+                      {!key.includes('_score') && <div className="answer-value">{value}</div>}
+                    </div>
+                  ))
+                ) : (
+                  <p>No hay respuestas detalladas guardadas.</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
