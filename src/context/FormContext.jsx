@@ -1,93 +1,52 @@
-import { createContext, useContext, useReducer, useCallback } from 'react';
+import { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { useAuth } from './AuthContext';
 
 const FormContext = createContext(null);
 
-// ── Dominios de vida ──
-export const DOMAIN_NAMES = [
-  'Trabajo / profesión', 'Dinero / seguridad', 'Salud / cuerpo',
-  'Alimentación / cuidado', 'Pareja / familia', 'Amistades / red de apoyo',
-  'Propósito / sentido', 'Espiritualidad / vida interior',
-  'Tiempo / hábitos', 'Descanso / disfrute'
-];
+export const FormProvider = ({ children }) => {
+  const { user } = useAuth();
+  
+  const initialState = {
+    meta: {
+      coachee_nombre: '',
+      coachee_apellido: '',
+      email: user?.email || '',
+      coach: '',
+      fecha: new Date().toISOString().slice(0, 10),
+      etapa: 'Yo Real-Actual'
+    },
+    respuestas: {},
+    submitting: false,
+    submitted: false
+  };
 
-export function slug(text) {
-  return text.toLowerCase().normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '_')
-    .replace(/^_|_$/g, '');
-}
-
-// ── Estado inicial ──
-const initialState = {
-  meta: {
-    coachee_nombre: '',
-    coachee_apellido: '',
-    email: '',
-    coach: '',
-    fecha: new Date().toISOString().slice(0, 10),
-    etapa: 'Yo Real-Actual'
-  },
-  respuestas: {},
-  submitting: false,
-  submitted: false
-};
-
-// ── Reducer ──
-function formReducer(state, action) {
-  switch (action.type) {
-    case 'SET_META':
-      return { ...state, meta: { ...state.meta, [action.field]: action.value } };
-    case 'SET_RESPUESTA':
-      return { ...state, respuestas: { ...state.respuestas, [action.name]: action.value } };
-    case 'SET_ALL':
-      return { ...state, ...action.payload };
-    case 'SUBMIT_START':
-      return { ...state, submitting: true };
-    case 'SUBMIT_END':
-      return { ...state, submitting: false, submitted: action.success };
-    case 'CLEAR':
-      return { ...initialState, meta: { ...initialState.meta, fecha: new Date().toISOString().slice(0, 10) } };
-    default:
-      return state;
-  }
-}
-
-// ── Provider ──
-export function FormProvider({ children }) {
   const [state, dispatch] = useReducer(formReducer, initialState);
 
-  const setMeta = useCallback((field, value) => {
-    dispatch({ type: 'SET_META', field, value });
-  }, []);
+  // Actualizar email si cambia el usuario
+  useEffect(() => {
+    if (user?.email) {
+      dispatch({ type: 'SET_META', payload: { key: 'email', value: user.email } });
+    }
+  }, [user]);
 
-  const setRespuesta = useCallback((name, value) => {
-    dispatch({ type: 'SET_RESPUESTA', name, value });
-  }, []);
-
-  const handleChange = useCallback((name, value, _domain) => {
-    dispatch({ type: 'SET_RESPUESTA', name, value });
-  }, []);
-
-  const setAll = useCallback((payload) => {
-    dispatch({ type: 'SET_ALL', payload });
-  }, []);
-
-  const clear = useCallback(() => {
-    dispatch({ type: 'CLEAR' });
-  }, []);
+  const setMeta = (key, value) => dispatch({ type: 'SET_META', payload: { key, value } });
+  const setRespuesta = (key, value) => dispatch({ type: 'SET_RESPUESTA', payload: { key, value } });
+  const setAll = (data) => dispatch({ type: 'SET_ALL', payload: data });
+  const clear = () => dispatch({ type: 'CLEAR' });
 
   const collectData = useCallback(() => {
     return {
+      user_id: user?.id,
+      email: user?.email || state.meta.email,
       coachee_nombre: state.meta.coachee_nombre,
       coachee_apellido: state.meta.coachee_apellido,
-      email: state.meta.email,
       coach: state.meta.coach,
       fecha: state.meta.fecha,
       etapa: state.meta.etapa,
       respuestas: { ...state.respuestas }
     };
-  }, [state]);
+  }, [state, user]);
 
   const loadProgress = useCallback(async (email) => {
     if (!email) return;
@@ -100,19 +59,16 @@ export function FormProvider({ children }) {
 
       if (error) throw error;
       if (data) {
-        dispatch({
-          type: 'SET_ALL',
-          payload: {
-            meta: {
-              coachee_nombre: data.coachee_nombre,
-              coachee_apellido: data.coachee_apellido,
-              email: data.email,
-              coach: data.coach,
-              fecha: data.fecha,
-              etapa: data.etapa
-            },
-            respuestas: data.respuestas || {}
-          }
+        setAll({
+          meta: {
+            coachee_nombre: data.coachee_nombre,
+            coachee_apellido: data.coachee_apellido,
+            email: data.email,
+            coach: data.coach,
+            fecha: data.fecha,
+            etapa: data.etapa
+          },
+          respuestas: data.respuestas || {}
         });
         return true;
       }
@@ -127,13 +83,13 @@ export function FormProvider({ children }) {
     dispatch({ type: 'SUBMIT_START' });
     try {
       const data = collectData();
-      if (!data.email) throw new Error('El email es obligatorio para guardar el progreso.');
       
       const { error } = await supabase
         .from('respuestas')
         .upsert(
           {
-            email: data.email.toLowerCase().trim(),
+            user_id: data.user_id,
+            email: data.email,
             coachee_nombre: data.coachee_nombre,
             coachee_apellido: data.coachee_apellido,
             coach: data.coach,
@@ -160,7 +116,6 @@ export function FormProvider({ children }) {
     dispatch,
     setMeta,
     setRespuesta,
-    handleChange,
     setAll,
     clear,
     collectData,
@@ -168,16 +123,26 @@ export function FormProvider({ children }) {
     loadProgress
   };
 
-  return (
-    <FormContext.Provider value={value}>
-      {children}
-    </FormContext.Provider>
-  );
+  return <FormContext.Provider value={value}>{children}</FormContext.Provider>;
+};
+
+function formReducer(state, action) {
+  switch (action.type) {
+    case 'SET_META':
+      return { ...state, meta: { ...state.meta, [action.payload.key]: action.payload.value } };
+    case 'SET_RESPUESTA':
+      return { ...state, respuestas: { ...state.respuestas, [action.payload.key]: action.payload.value } };
+    case 'SET_ALL':
+      return { ...state, meta: { ...state.meta, ...action.payload.meta }, respuestas: action.payload.respuestas };
+    case 'SUBMIT_START':
+      return { ...state, submitting: true };
+    case 'SUBMIT_END':
+      return { ...state, submitting: false, submitted: action.success };
+    case 'CLEAR':
+      return { ...state, meta: { ...state.meta, coachee_nombre: '', coachee_apellido: '' }, respuestas: {} };
+    default:
+      return state;
+  }
 }
 
-// ── Hook ──
-export function useForm() {
-  const context = useContext(FormContext);
-  if (!context) throw new Error('useForm must be used within a FormProvider');
-  return context;
-}
+export const useForm = () => useContext(FormContext);
