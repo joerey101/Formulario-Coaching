@@ -175,3 +175,42 @@
   .principles, .summary-grid, .meta-grid { grid-template-columns: 1fr; }
   .nav-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+.btn-finalizar {
+  padding: 16px 32px;
+  background: #e5e7eb;
+  color: #9ca3af;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: not-allowed;
+  transition: all 0.2s;
+}
+
+.btn-finalizar--activo {
+  background: #10b981;
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-finalizar--activo:hover:not(:disabled) {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.finalizar-hint {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 12px;
+}
+
+.form-finalizar-container {
+  margin: 40px 0 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}

@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
+import { createContext, useContext, useReducer, useCallback, useEffect, useState, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
 
@@ -41,6 +41,40 @@ export const FormProvider = ({ children }) => {
   };
 
   const [state, dispatch] = useReducer(formReducer, initialState);
+
+  const [estado, setEstado] = useState('en_progreso'); // 'en_progreso' | 'finalizado'
+  const [finalizadoAt, setFinalizadoAt] = useState(null);
+  const [finalizando, setFinalizando] = useState(false);
+
+  const esReadonly = estado === 'finalizado';
+
+  const fieldNames = useMemo(() => {
+    const names = [];
+    names.push('satisfaccion_general_score', 'pulso_datos', 'pulso_estado', 'pulso_felicidad', 'pulso_atencion');
+    DOMAIN_NAMES.forEach((d) => {
+      const s = slug(d);
+      names.push(`${s}_score`, `${s}_estado`, `${s}_patron`, `${s}_necesita`);
+    });
+    [1, 2].forEach((i) => {
+      names.push(`hijo_${i}_nombre`, `hijo_${i}_score`, `hijo_${i}_necesita`, `hijo_${i}_patron`, `hijo_${i}_gesto`);
+    });
+    names.push('bienestar_interior_score', 'emociones_conciencia', 'dialogo_interno', 'mente_creativa', 'miedos', 'apegos', 'limita', 'centro', 'criticas');
+    names.push('limites_personales_score', 'limites_donde', 'limites_costo', 'autocompasion_score', 'amor_propio', 'perdon_propio', 'perdon_otros', 'expresion_sentimientos');
+    names.push('patrones_repetidos', 'automaticos', 'conversacion_pendiente', 'decision_pendiente', 'beneficio_oculto', 'versiones');
+    names.push('descubrimiento', 'brecha', 'prioridades', 'tres_temas', 'compromiso');
+    return names;
+  }, []);
+
+  const progreso = useMemo(() => {
+    let count = 0;
+    fieldNames.forEach((name) => {
+      const val = state.respuestas[name];
+      if (val === undefined || val === null || val === '') return;
+      if (Array.isArray(val) && val.length === 0) return;
+      count++;
+    });
+    return fieldNames.length ? Math.round((count / fieldNames.length) * 100) : 0;
+  }, [state.respuestas, fieldNames]);
 
   // Actualizar email si cambia el usuario
   useEffect(() => {
@@ -89,6 +123,8 @@ export const FormProvider = ({ children }) => {
           },
           respuestas: data.respuestas || {}
         });
+        setEstado(data.estado || 'en_progreso');
+        setFinalizadoAt(data.finalizado_at || null);
         return true;
       }
       return false;
@@ -167,6 +203,51 @@ export const FormProvider = ({ children }) => {
     }
   }, [collectData]);
 
+  const finalizarFormulario = async () => {
+    if (progreso < 100) {
+      console.warn('[FORM] Intento de finalizar con progreso < 100%');
+      return { error: { message: 'El formulario debe estar al 100% para finalizarse' } };
+    }
+    
+    setFinalizando(true);
+    console.log('[FORM] Finalizando formulario');
+    
+    try {
+      // Primero guardar el estado actual de respuestas
+      const { success, error: errorGuardado } = await submitData();
+      if (!success) {
+        setFinalizando(false);
+        return { error: { message: errorGuardado } };
+      }
+      
+      // Después marcar como finalizado
+      const { error: errorFinalizado } = await supabase
+        .from('respuestas')
+        .update({
+          estado: 'finalizado',
+          finalizado_at: new Date().toISOString(),
+          finalizado_por: user.id,
+        })
+        .eq('user_id', user.id);
+      
+      if (errorFinalizado) {
+        console.error('[FORM] Error finalizando:', errorFinalizado);
+        setFinalizando(false);
+        return { error: errorFinalizado };
+      }
+      
+      setEstado('finalizado');
+      setFinalizadoAt(new Date().toISOString());
+      setFinalizando(false);
+      console.log('[FORM] Formulario finalizado correctamente');
+      return { error: null };
+    } catch (err) {
+      console.error('[FORM] Excepción finalizando:', err);
+      setFinalizando(false);
+      return { error: err };
+    }
+  };
+
   const value = {
     state,
     dispatch,
@@ -176,7 +257,13 @@ export const FormProvider = ({ children }) => {
     clear,
     collectData,
     submitData,
-    loadProgress
+    loadProgress,
+    estado,
+    finalizadoAt,
+    esReadonly,
+    finalizando,
+    finalizarFormulario,
+    progreso
   };
 
   return <FormContext.Provider value={value}>{children}</FormContext.Provider>;
@@ -202,3 +289,4 @@ function formReducer(state, action) {
 }
 
 export const useForm = () => useContext(FormContext);
+export const useFormContext = useForm;

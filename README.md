@@ -5,15 +5,13 @@ Plataforma interactiva para el proceso de coaching, permitiendo a los coachees r
 ## 🚀 Estado Actual: Migración a Supabase Auth & Resend Finalizada
 La plataforma ha sido migrada con éxito a un sistema de autenticación robusto y notificaciones automáticas.
 
-### Últimas Mejoras (14 Mayo 2026):
-- **Autenticación Segura**: Integración total con Supabase Auth.
-- **Roles Dinámicos**: Diferenciación automática entre Coach (Admin) y Coachee (Cliente).
-- **Notificaciones**: Sistema de aviso por mail al Coach (vía Resend) al recibir nuevas respuestas.
-- **Recuperación de Clave**: Flujo completo de "Olvidé mi contraseña".
+### Últimas Mejoras:
+- **Versión 2.0 (15 Mayo 2026)**: Barra de progreso, sistema de finalización (modo lectura) y capacidad de reabrir formularios desde el admin.
+- **Versión 1.0 (14 Mayo 2026)**: Autenticación segura con Supabase, roles y notificaciones por mail.
 
 ### Documentación Detallada:
-Para ver el detalle técnico de la migración y cómo mantener el sistema, revisá el archivo:
-👉 **[MIGRACION_AUTH_REPORTE_FINAL.md](./MIGRACION_AUTH_REPORTE_FINAL.md)**
+- 👉 **[VERSION_2_0.md](./VERSION_2_0.md)**: Detalle de la barra de progreso y sistema de finalización.
+- 👉 **[MIGRACION_AUTH_REPORTE_FINAL.md](./MIGRACION_AUTH_REPORTE_FINAL.md)**: Detalle técnico de la migración a Supabase Auth y Resend.
 
 ## 🛠️ Tecnologías
 - **Frontend**: React + Vite

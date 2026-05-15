@@ -1,6 +1,6 @@
 import './TextArea.css';
 
-export default function TextArea({ name, label, helper, value, onChange }) {
+export default function TextArea({ name, label, helper, value, onChange, disabled }) {
   return (
     <div className="textarea-field">
       {label && <label htmlFor={name}>{label}</label>}
@@ -10,6 +10,7 @@ export default function TextArea({ name, label, helper, value, onChange }) {
         value={value || ''}
         onChange={(e) => onChange(name, e.target.value)}
         placeholder="Escribí tu respuesta..."
+        disabled={disabled}
       />
       {helper && <p className="helper">{helper}</p>}
     </div>

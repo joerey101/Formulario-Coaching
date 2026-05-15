@@ -7,8 +7,9 @@ const PRIORITY_NAMES = [
   'Límites', 'Miedos', 'Otra'
 ];
 
-export default function PriorityList({ selected = [], onChange }) {
+export default function PriorityList({ selected = [], onChange, disabled }) {
   const toggle = (item) => {
+    if (disabled) return;
     const next = selected.includes(item)
       ? selected.filter((s) => s !== item)
       : [...selected, item];
@@ -18,13 +19,14 @@ export default function PriorityList({ selected = [], onChange }) {
   return (
     <div className="priority-list">
       {PRIORITY_NAMES.map((item) => (
-        <label key={item} className={`priority-item ${selected.includes(item) ? 'checked' : ''}`}>
+        <label key={item} className={`priority-item ${selected.includes(item) ? 'checked' : ''} ${disabled ? 'disabled' : ''}`}>
           <input
             type="checkbox"
             name="prioridades"
             value={item}
             checked={selected.includes(item)}
             onChange={() => toggle(item)}
+            disabled={disabled}
           />
           <span>{item}</span>
         </label>

@@ -54,6 +54,28 @@ export default function AdminPage() {
     }
   };
 
+  const handleReabrir = async (id) => {
+    if (!window.confirm('¿Seguro que querés reabrir este formulario? El coachee podrá volver a editar sus respuestas.')) return;
+    try {
+      console.log(`[ADMIN] Reabriendo formulario ${id}`);
+      const { error } = await supabase
+        .from('respuestas')
+        .update({ estado: 'en_progreso', finalizado_at: null, finalizado_por: null })
+        .eq('id', id);
+          
+      if (error) {
+        alert(`Error al reabrir: ${error.message}`);
+        return;
+      }
+      
+      alert('Formulario reabierto exitosamente.');
+      setRespuestas(respuestas.map(r => r.id === id ? { ...r, estado: 'en_progreso', finalizado_at: null, finalizado_por: null } : r));
+      setSelectedItem(null);
+    } catch (err) {
+      alert('Error inesperado al reabrir');
+    }
+  };
+
   const handleExportCSV = () => {
     if (respuestas.length === 0) return;
     
@@ -141,6 +163,7 @@ export default function AdminPage() {
                   <th>Email</th>
                   <th>Coach</th>
                   <th>Etapa</th>
+                  <th>Estado</th>
                   <th>Score Gral.</th>
                   <th>Acciones</th>
                 </tr>
@@ -153,6 +176,11 @@ export default function AdminPage() {
                     <td className="text-muted">{item.email}</td>
                     <td>{item.coach || '-'}</td>
                     <td><span className="badge">{item.etapa}</span></td>
+                    <td>
+                      <span className={`badge ${item.estado === 'finalizado' ? 'badge--finalizado' : 'badge--en-progreso'}`}>
+                        {item.estado === 'finalizado' ? '🔒 Finalizado' : '✏️ En progreso'}
+                      </span>
+                    </td>
                     <td style={{ textAlign: 'center' }}>
                       <span className="score-pill">
                         {item.respuestas?.satisfaccion_general_score || '-'}
@@ -231,6 +259,14 @@ export default function AdminPage() {
               })}
             </div>
             <div className="modal-footer">
+              {selectedItem.estado === 'finalizado' && (
+                <button 
+                  onClick={() => handleReabrir(selectedItem.id)} 
+                  className="btn-reabrir"
+                >
+                  Reabrir Formulario
+                </button>
+              )}
               <button onClick={() => setSelectedItem(null)} className="btn-primary">Cerrar</button>
             </div>
           </div>

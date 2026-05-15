@@ -1,8 +1,10 @@
 import ScaleInput from '../ui/ScaleInput';
 import TextArea from '../ui/TextArea';
+import { useFormContext } from '../../context/FormContext';
 import './ChildBlock.css';
 
 export default function ChildBlock({ index, values, onChange }) {
+  const { esReadonly } = useFormContext();
   const prefix = `hijo_${index}`;
   const title = index === 1 ? 'Vínculo con hijos/as' : 'Vínculo con hijos/as adicional';
   const domain = `Hijo/a ${index}`;
@@ -18,6 +20,7 @@ export default function ChildBlock({ index, values, onChange }) {
           type="text"
           value={values[`${prefix}_nombre`] || ''}
           onChange={(e) => onChange(`${prefix}_nombre`, e.target.value)}
+          disabled={esReadonly}
         />
       </div>
       <div className="question">
@@ -32,6 +35,7 @@ export default function ChildBlock({ index, values, onChange }) {
           domain={domain}
           value={values[`${prefix}_score`] || ''}
           onChange={onChange}
+          disabled={esReadonly}
         />
       </div>
       <TextArea
@@ -39,18 +43,21 @@ export default function ChildBlock({ index, values, onChange }) {
         label="¿Qué necesita más presencia, cuidado o reparación?"
         value={values[`${prefix}_necesita`]}
         onChange={onChange}
+        disabled={esReadonly}
       />
       <TextArea
         name={`${prefix}_patron`}
         label="¿Qué patrón tuyo aparece con frecuencia en este vínculo?"
         value={values[`${prefix}_patron`]}
         onChange={onChange}
+        disabled={esReadonly}
       />
       <TextArea
         name={`${prefix}_gesto`}
         label="¿Qué gesto concreto podrías hacer este mes para fortalecerlo?"
         value={values[`${prefix}_gesto`]}
         onChange={onChange}
+        disabled={esReadonly}
       />
     </div>
   );
