@@ -155,7 +155,7 @@ export default function FormularioPage() {
         <SectionCard 
           number="1" 
           title="Pulso Actual" 
-          subtitle="¿Cómo te sentís hoy con tu vida en general?"
+          subtitle="Cómo calificarías tu Satisfacción con tu vida en General?"
           defaultOpen={true}
         >
           <div className="question">
@@ -172,7 +172,7 @@ export default function FormularioPage() {
           </div>
           <TextArea 
             name="pulso_datos" 
-            label="¿Qué datos (hechos) justifican ese número?" 
+            label="Que elementos (Positivos o Negativos) configuran este número?" 
             value={state.respuestas.pulso_datos} 
             onChange={handleChange} 
             disabled={esReadonly}
@@ -224,7 +224,6 @@ export default function FormularioPage() {
           subtitle="La profundidad de tus relaciones primarias."
         >
           <ChildBlock index={1} values={state.respuestas} onChange={handleChange} />
-          <ChildBlock index={2} values={state.respuestas} onChange={handleChange} />
         </SectionCard>
 
         {/* ── SECCIÓN 4: BIENESTAR INTERIOR ── */}
@@ -267,12 +266,12 @@ export default function FormularioPage() {
             disabled={esReadonly}
           />
           <div className="meta-grid">
-            <TextArea name="miedos" label="Principales miedos" value={state.respuestas.miedos} onChange={handleChange} disabled={esReadonly} />
-            <TextArea name="apegos" label="Principales apegos" value={state.respuestas.apegos} onChange={handleChange} disabled={esReadonly} />
+            <TextArea name="miedos" label="Cuáles son tus principales Miedos?" value={state.respuestas.miedos} onChange={handleChange} disabled={esReadonly} />
+            <TextArea name="apegos" label="Tenés identificados tus apegos? Cuáles son?" value={state.respuestas.apegos} onChange={handleChange} disabled={esReadonly} />
           </div>
           <TextArea 
             name="limita" 
-            label="¿Qué creencia sentís que te limita hoy?" 
+            label="¿Qué creencia(s) sentís que te limita(n) hoy?" 
             value={state.respuestas.limita} 
             onChange={handleChange} 
             disabled={esReadonly}
@@ -286,7 +285,7 @@ export default function FormularioPage() {
           />
           <TextArea 
             name="criticas" 
-            label="¿Cómo manejás la crítica (propia y ajena)?" 
+            label="¿Cómo manejás la crítica (propia y ajena)? y la mirada de los demás?" 
             value={state.respuestas.criticas} 
             onChange={handleChange} 
             disabled={esReadonly}
@@ -447,7 +446,7 @@ export default function FormularioPage() {
           />
           <TextArea 
             name="compromiso" 
-            label="Nivel de compromiso: ¿Qué estás dispuesto/a a soltar para que lo nuevo aparezca?" 
+            label="Nivel de compromiso: ¿Qué estás dispuesto/a a soltar para que lo nuevo aparezca? y qué estás dispuesto/a a poner de Vos?" 
             value={state.respuestas.compromiso} 
             onChange={handleChange} 
             disabled={esReadonly}

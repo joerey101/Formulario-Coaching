@@ -55,7 +55,7 @@ export const FormProvider = ({ children }) => {
       const s = slug(d);
       names.push(`${s}_score`, `${s}_estado`, `${s}_patron`, `${s}_necesita`);
     });
-    [1, 2].forEach((i) => {
+    [1].forEach((i) => {
       names.push(`hijo_${i}_nombre`, `hijo_${i}_score`, `hijo_${i}_necesita`, `hijo_${i}_patron`, `hijo_${i}_gesto`);
     });
     names.push('bienestar_interior_score', 'emociones_conciencia', 'dialogo_interno', 'mente_creativa', 'miedos', 'apegos', 'limita', 'centro', 'criticas');

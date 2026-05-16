@@ -40,21 +40,21 @@ export default function ChildBlock({ index, values, onChange }) {
       </div>
       <TextArea
         name={`${prefix}_necesita`}
-        label="¿Qué necesita más presencia, cuidado o reparación?"
+        label="Qué te gusta hoy de tu Ser Padre? Cuáles son tus fortalezas?"
         value={values[`${prefix}_necesita`]}
         onChange={onChange}
         disabled={esReadonly}
       />
       <TextArea
         name={`${prefix}_patron`}
-        label="¿Qué patrón tuyo aparece con frecuencia en este vínculo?"
+        label="Qué aspectos identificas que te gustaría modificar?"
         value={values[`${prefix}_patron`]}
         onChange={onChange}
         disabled={esReadonly}
       />
       <TextArea
         name={`${prefix}_gesto`}
-        label="¿Qué gesto concreto podrías hacer este mes para fortalecerlo?"
+        label="Qué sentís que tu(s) hij@(s) está necesitando de vos en este momento?"
         value={values[`${prefix}_gesto`]}
         onChange={onChange}
         disabled={esReadonly}
