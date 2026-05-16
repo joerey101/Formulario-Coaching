@@ -1,11 +1,12 @@
-// src/App.jsx
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { FormProvider } from './context/FormContext';
 import LoginPage from './pages/LoginPage';
+import HubCoachee from './pages/HubCoachee';
 import FormularioPage from './pages/FormularioPage';
 import AdminPage from './pages/AdminPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import SmartRedirect from './components/routing/SmartRedirect';
 
 function LoadingScreen() {
   return (
@@ -26,13 +27,10 @@ function ProtectedRoute({ children }) {
   const { user, isCoach, loading } = useAuth();
   if (loading) return <LoadingScreen />;
   if (!user) return <Navigate to="/login" replace />;
-
-  // Si es coach, su lugar es /admin, no el formulario del coachee
   if (isCoach) {
     console.log('[AUTH] Coach detectado en ruta protegida de coachee. Redirigiendo a /admin');
     return <Navigate to="/admin" replace />;
   }
-
   return children;
 }
 
@@ -68,8 +66,30 @@ function AppRoutes() {
         }
       />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
+
+      {/* Ruta raíz del coachee: redirección inteligente */}
       <Route
         path="/"
+        element={
+          <ProtectedRoute>
+            <SmartRedirect />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Hub del coachee (acceso directo) */}
+      <Route
+        path="/hub"
+        element={
+          <ProtectedRoute>
+            <HubCoachee />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Formulario específico */}
+      <Route
+        path="/formulario/:codigo"
         element={
           <ProtectedRoute>
             <FormProvider>
@@ -78,6 +98,7 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/admin"
         element={
@@ -86,6 +107,7 @@ function AppRoutes() {
           </CoachRoute>
         }
       />
+
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

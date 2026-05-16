@@ -1,0 +1,144 @@
+.hub-coachee {
+  min-height: 100vh;
+  background: var(--bg);
+  padding: 32px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.hub-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 32px;
+  margin-bottom: 48px;
+  flex-wrap: wrap;
+}
+
+.hub-header__left h1 {
+  font-size: 2rem;
+  margin: 0 0 4px;
+  letter-spacing: -0.03em;
+  color: var(--text);
+}
+
+.hub-subtitle {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.hub-header__right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.hub-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 240px;
+}
+
+.hub-progress__label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.hub-progress__track {
+  height: 6px;
+  background: var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.hub-progress__fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 999px;
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-logout {
+  padding: 8px 16px;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-logout:hover {
+  background: var(--bg);
+}
+
+.hub-main {
+  margin-bottom: 64px;
+}
+
+.hub-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.hub-loading,
+.hub-empty {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.hub-empty-content {
+  max-width: 480px;
+  text-align: center;
+}
+
+.empty-state h2 {
+  font-size: 1.5rem;
+  margin-bottom: 12px;
+  color: var(--text);
+}
+
+.empty-state p {
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.empty-state a {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.hub-footer {
+  text-align: center;
+  padding: 24px 0;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 640px) {
+  .hub-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hub-header__right {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hub-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}

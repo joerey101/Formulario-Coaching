@@ -1,0 +1,133 @@
+.formulario-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg, 16px);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  min-height: 240px;
+}
+
+.formulario-card:not(.formulario-card--bloqueado):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.formulario-card--bloqueado {
+  opacity: 0.6;
+  background: var(--bg);
+}
+
+.formulario-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.card-estado--bloqueado {
+  background: rgba(100, 116, 139, 0.1);
+  color: #64748b;
+}
+
+.card-estado--disponible {
+  background: rgba(147, 51, 234, 0.1);
+  color: var(--accent);
+}
+
+.card-estado--en-progreso {
+  background: rgba(245, 158, 11, 0.1);
+  color: #d97706;
+}
+
+.card-estado--finalizado {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+}
+
+.card-tag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+}
+
+.card-tag--sistema {
+  background: var(--accent);
+  color: white;
+}
+
+.formulario-card__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.formulario-card__titulo {
+  font-size: 1.25rem;
+  margin: 0;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.formulario-card__descripcion {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.formulario-card__finalizado-info {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 4px 0 0;
+  font-style: italic;
+}
+
+.formulario-card__footer {
+  margin-top: auto;
+}
+
+.btn-card {
+  width: 100%;
+  padding: 12px 20px;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+}
+
+.btn-card--activo {
+  background: var(--accent);
+  color: white;
+}
+
+.btn-card--activo:hover {
+  opacity: 0.9;
+}
+
+.btn-card--activo:active {
+  transform: scale(0.98);
+}
+
+.btn-card--bloqueado {
+  background: var(--border);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}

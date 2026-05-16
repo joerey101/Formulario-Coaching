@@ -8,12 +8,31 @@ import ChildBlock from '../components/form/ChildBlock';
 import PriorityList from '../components/form/PriorityList';
 import TextArea from '../components/ui/TextArea';
 import ScaleInput from '../components/ui/ScaleInput';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useAsignaciones } from '../hooks/useAsignaciones';
 import './FormularioPage.css';
 
 export default function FormularioPage() {
   const { state, setMeta, setRespuesta, loadProgress, estado, finalizadoAt, esReadonly, finalizando, finalizarFormulario, progreso, submitData, collectData } = useForm();
   const [mostrarConfirmacionFinalizar, setMostrarConfirmacionFinalizar] = useState(false);
   const { user, signOut } = useAuth();
+  
+  const { codigo } = useParams();
+  const navigate = useNavigate();
+  const { asignaciones, loading: loadingAsignaciones } = useAsignaciones();
+
+  // Verificar que el coachee tiene acceso a este formulario
+  useEffect(() => {
+    if (!loadingAsignaciones) {
+      const asignacion = asignaciones.find(
+        a => a.formulario.codigo === codigo && a.habilitado
+      );
+      if (!asignacion) {
+        console.warn('[HUB] Coachee no tiene asignación habilitada para:', codigo);
+        navigate('/hub', { replace: true });
+      }
+    }
+  }, [codigo, asignaciones, loadingAsignaciones, navigate]);
 
   useEffect(() => {
     if (user?.email) {
@@ -37,6 +56,13 @@ export default function FormularioPage() {
             Sesión iniciada: <strong>{user?.email}</strong>
           </p>
           <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+            <button 
+              onClick={() => navigate('/hub')} 
+              className="btn-view"
+              style={{ fontSize: '0.75rem', padding: '6px 14px' }}
+            >
+              ← Volver al Hub
+            </button>
             <button 
               className="btn-view" 
               style={{ fontSize: '0.75rem', padding: '6px 14px' }}
