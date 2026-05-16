@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { FormProvider } from './context/FormContext';
 import LoginPage from './pages/LoginPage';
 import HubCoachee from './pages/HubCoachee';
 import FormularioPage from './pages/FormularioPage';
@@ -87,14 +86,11 @@ function AppRoutes() {
         }
       />
 
-      {/* Formulario específico */}
       <Route
         path="/formulario/:codigo"
         element={
           <ProtectedRoute>
-            <FormProvider>
-              <FormularioPage />
-            </FormProvider>
+            <FormularioPage />
           </ProtectedRoute>
         }
       />

@@ -1,8 +1,9 @@
 import { createContext, useContext, useReducer, useCallback, useEffect, useState, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
+import { getFormularioConfig } from '../formularios/configs';
 
-// ── Helpers ──
+// ── Helpers (Se conservan aquí por pedido del usuario) ──
 export const DOMAIN_NAMES = [
   'Vínculos y Relaciones',
   'Salud y Vitalidad',
@@ -23,9 +24,17 @@ export function slug(text) {
 
 const FormContext = createContext(null);
 
-export const FormProvider = ({ children }) => {
+export const FormProvider = ({ children, codigo, asignacionId }) => {
   const { user } = useAuth();
   
+  // Cargar la configuración del formulario según el código
+  const config = useMemo(() => getFormularioConfig(codigo), [codigo]);
+  
+  // Obtener los fieldNames desde la config
+  const fieldNames = useMemo(() => {
+    return config.secciones.flatMap(s => s.fieldNames);
+  }, [config]);
+
   const initialState = {
     meta: {
       coachee_nombre: '',
@@ -33,7 +42,7 @@ export const FormProvider = ({ children }) => {
       email: user?.email || '',
       coach: '',
       fecha: new Date().toISOString().slice(0, 10),
-      etapa: 'Yo Real-Actual'
+      etapa: config.titulo // Usamos el título de la config
     },
     respuestas: {},
     submitting: false,
@@ -45,26 +54,11 @@ export const FormProvider = ({ children }) => {
   const [estado, setEstado] = useState('en_progreso'); // 'en_progreso' | 'finalizado'
   const [finalizadoAt, setFinalizadoAt] = useState(null);
   const [finalizando, setFinalizando] = useState(false);
+  const [formularioId, setFormularioId] = useState(null);
 
   const esReadonly = estado === 'finalizado';
 
-  const fieldNames = useMemo(() => {
-    const names = [];
-    names.push('satisfaccion_general_score', 'pulso_datos', 'pulso_estado', 'pulso_felicidad', 'pulso_atencion');
-    DOMAIN_NAMES.forEach((d) => {
-      const s = slug(d);
-      names.push(`${s}_score`, `${s}_estado`, `${s}_patron`, `${s}_necesita`);
-    });
-    [1].forEach((i) => {
-      names.push(`hijo_${i}_nombre`, `hijo_${i}_score`, `hijo_${i}_necesita`, `hijo_${i}_patron`, `hijo_${i}_gesto`);
-    });
-    names.push('bienestar_interior_score', 'emociones_conciencia', 'dialogo_interno', 'mente_creativa', 'miedos', 'apegos', 'limita', 'centro', 'criticas');
-    names.push('limites_personales_score', 'limites_donde', 'limites_costo', 'autocompasion_score', 'amor_propio', 'perdon_propio', 'perdon_otros', 'expresion_sentimientos');
-    names.push('patrones_repetidos', 'automaticos', 'conversacion_pendiente', 'decision_pendiente', 'beneficio_oculto', 'versiones');
-    names.push('descubrimiento', 'brecha', 'prioridades', 'tres_temas', 'compromiso');
-    return names;
-  }, []);
-
+  // Progreso calculado usando los fieldNames de la config
   const progreso = useMemo(() => {
     let count = 0;
     fieldNames.forEach((name) => {
@@ -101,39 +95,62 @@ export const FormProvider = ({ children }) => {
     };
   }, [state, user]);
 
-  const loadProgress = useCallback(async (email) => {
-    if (!email) return;
-    try {
-      const { data, error } = await supabase
-        .from('respuestas')
-        .select('*')
-        .eq('email', email.toLowerCase().trim())
-        .maybeSingle();
+  // Cargar progreso inicial basado en asignacionId
+  useEffect(() => {
+    const cargarProgreso = async () => {
+      if (!asignacionId || !codigo) return;
+      
+      console.log(`[FORM] Cargando progreso para asignación: ${asignacionId}`);
+      try {
+        // 1. Buscar el formulario_id por su codigo
+        const { data: form, error: formError } = await supabase
+          .from('formularios')
+          .select('id')
+          .eq('codigo', codigo)
+          .single();
 
-      if (error) throw error;
-      if (data) {
-        setAll({
-          meta: {
-            coachee_nombre: data.coachee_nombre,
-            coachee_apellido: data.coachee_apellido,
-            email: data.email,
-            coach: data.coach,
-            fecha: data.fecha,
-            etapa: data.etapa
-          },
-          respuestas: data.respuestas || {}
-        });
-        setEstado(data.estado || 'en_progreso');
-        setFinalizadoAt(data.finalizado_at || null);
-        return true;
+        if (formError || !form) {
+          console.error(`[FORM] No se encontró formulario con codigo=${codigo}`);
+          return;
+        }
+        setFormularioId(form.id);
+
+        // 2. Cargar respuesta existente para esta asignación
+        const { data, error } = await supabase
+          .from('respuestas')
+          .select('*')
+          .eq('asignacion_id', asignacionId)
+          .maybeSingle();
+
+        if (error) throw error;
+        
+        if (data) {
+          console.log('[FORM] Respuestas encontradas, cargando estado.');
+          setAll({
+            meta: {
+              coachee_nombre: data.coachee_nombre || '',
+              coachee_apellido: data.coachee_apellido || '',
+              email: data.email || user?.email || '',
+              coach: data.coach || '',
+              fecha: data.fecha || new Date().toISOString().slice(0, 10),
+              etapa: data.etapa || config.titulo
+            },
+            respuestas: data.respuestas || {}
+          });
+          setEstado(data.estado || 'en_progreso');
+          setFinalizadoAt(data.finalizado_at || null);
+        } else {
+          console.log('[FORM] No hay respuestas previas para esta asignación.');
+        }
+      } catch (err) {
+        console.error('[FORM] Error cargando progreso:', err);
       }
-      return false;
-    } catch (err) {
-      console.error('Error cargando progreso:', err);
-      return false;
-    }
-  }, []);
+    };
 
+    cargarProgreso();
+  }, [codigo, asignacionId, user, config.titulo]);
+
+  // submitData adaptado para usar formulario_id y asignacion_id
   const submitData = useCallback(async () => {
     dispatch({ type: 'SUBMIT_START' });
     try {
@@ -143,35 +160,38 @@ export const FormProvider = ({ children }) => {
         throw new Error('No hay una sesión de usuario activa. Por favor, volvé a ingresar.');
       }
 
-      console.log('Intentando guardar datos para:', data.email, 'ID:', data.user_id);
+      console.log('[FORM] Intentando guardar datos para:', data.email, 'Asignación:', asignacionId);
+
+      const payload = {
+        user_id: data.user_id,
+        email: data.email,
+        coachee_nombre: data.coachee_nombre,
+        coachee_apellido: data.coachee_apellido,
+        coach: data.coach,
+        fecha: data.fecha,
+        etapa: data.etapa,
+        respuestas: data.respuestas,
+        formulario_id: formularioId,
+        asignacion_id: asignacionId,
+        estado: estado,
+        updated_at: new Date().toISOString()
+      };
 
       const { error, data: result } = await supabase
         .from('respuestas')
-        .upsert(
-          {
-            user_id: data.user_id,
-            email: data.email,
-            coachee_nombre: data.coachee_nombre,
-            coachee_apellido: data.coachee_apellido,
-            coach: data.coach,
-            fecha: data.fecha,
-            etapa: data.etapa,
-            respuestas: data.respuestas
-          },
-          { onConflict: 'email' }
-        )
+        .upsert(payload, { onConflict: 'asignacion_id' })
         .select();
 
       if (error) {
-        console.error('Error detallado de Supabase:', error);
+        console.error('[FORM] Error detallado de Supabase:', error);
         throw error;
       }
       
-      console.log('Guardado exitoso:', result);
+      console.log('[FORM] Guardado exitoso:', result);
       
       // ── Disparar notificación por mail (Edge Function + Resend) ──
       try {
-        console.log('[MAIL] Intentando enviar notificación...');
+        console.log('[FORM] Intentando enviar notificación...');
         const { error: funcError } = await supabase.functions.invoke('send-form-notification', {
           body: {
             coachee_nombre: data.coachee_nombre,
@@ -182,27 +202,27 @@ export const FormProvider = ({ children }) => {
         });
         
         if (funcError) {
-          console.error('[MAIL] Error de la función:', funcError);
+          console.error('[FORM] Error de la función:', funcError);
         } else {
-          console.log('[MAIL] Notificación enviada correctamente');
+          console.log('[FORM] Notificación enviada correctamente');
         }
       } catch (mailErr) {
-        // No bloqueamos el flujo principal si falla el mail
-        console.error('[MAIL] Fallo al disparar notificación:', mailErr);
+        console.error('[FORM] Fallo al disparar notificación:', mailErr);
       }
 
       dispatch({ type: 'SUBMIT_END', success: true });
       return { success: true };
     } catch (error) {
-      console.error('Error en submitData:', error);
+      console.error('[FORM] Error en submitData:', error);
       dispatch({ type: 'SUBMIT_END', success: false });
       return { 
         success: false, 
         error: error.message || 'Error desconocido al guardar' 
       };
     }
-  }, [collectData]);
+  }, [collectData, formularioId, asignacionId, estado]);
 
+  // finalizarFormulario adaptado para actualizar respuestas y asignaciones
   const finalizarFormulario = async () => {
     if (progreso < 100) {
       console.warn('[FORM] Intento de finalizar con progreso < 100%');
@@ -220,26 +240,44 @@ export const FormProvider = ({ children }) => {
         return { error: { message: errorGuardado } };
       }
       
-      // Después marcar como finalizado
+      const now = new Date().toISOString();
+      
+      // 1. Marcar como finalizado en la tabla respuestas
       const { error: errorFinalizado } = await supabase
         .from('respuestas')
         .update({
           estado: 'finalizado',
-          finalizado_at: new Date().toISOString(),
+          finalizado_at: now,
           finalizado_por: user.id,
         })
-        .eq('user_id', user.id);
+        .eq('asignacion_id', asignacionId);
       
       if (errorFinalizado) {
-        console.error('[FORM] Error finalizando:', errorFinalizado);
+        console.error('[FORM] Error finalizando en respuestas:', errorFinalizado);
         setFinalizando(false);
         return { error: errorFinalizado };
       }
+
+      // 2. Marcar como finalizado en la tabla asignaciones
+      const { error: errorAsignacion } = await supabase
+        .from('asignaciones')
+        .update({
+          estado: 'finalizado',
+          finalizado_at: now,
+          finalizado_por: user.id,
+        })
+        .eq('id', asignacionId);
+
+      if (errorAsignacion) {
+        console.error('[FORM] Error finalizando en asignaciones:', errorAsignacion);
+        setFinalizando(false);
+        return { error: errorAsignacion };
+      }
       
       setEstado('finalizado');
-      setFinalizadoAt(new Date().toISOString());
+      setFinalizadoAt(now);
       setFinalizando(false);
-      console.log('[FORM] Formulario finalizado correctamente');
+      console.log('[FORM] Formulario finalizado correctamente en respuestas y asignaciones');
       return { error: null };
     } catch (err) {
       console.error('[FORM] Excepción finalizando:', err);
@@ -257,13 +295,13 @@ export const FormProvider = ({ children }) => {
     clear,
     collectData,
     submitData,
-    loadProgress,
     estado,
     finalizadoAt,
     esReadonly,
     finalizando,
     finalizarFormulario,
-    progreso
+    progreso,
+    config // Exponemos la config para que FormularioPage la use
   };
 
   return <FormContext.Provider value={value}>{children}</FormContext.Provider>;
