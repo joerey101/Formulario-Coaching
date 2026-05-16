@@ -51,11 +51,13 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     let isMounted = true;
+    let currentUserId = null; // Track del user.id actual para comparar cambios
 
     const initialize = async () => {
       try {
         const { data: { session: initialSession } } = await supabase.auth.getSession();
         if (isMounted) {
+          currentUserId = initialSession?.user?.id ?? null;
           await updateAuthState(initialSession);
           console.log('[AUTH] Initial session cargada');
           setLoading(false);
@@ -70,12 +72,22 @@ export function AuthProvider({ children }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, newSession) => {
-        console.log('[AUTH] onAuthStateChange event:', _event);
-        if (isMounted) {
-          // Forzamos loading true mientras procesamos el cambio de sesión y rol
+        if (!isMounted) return;
+
+        const newUserId = newSession?.user?.id ?? null;
+        const userIdentityChanged = newUserId !== currentUserId;
+
+        console.log('[AUTH] onAuthStateChange event:', _event, '| userChanged:', userIdentityChanged);
+
+        if (userIdentityChanged) {
+          // Cambio real de identidad (login, logout, switch de usuario) → mostrar loading
           setLoading(true);
+          currentUserId = newUserId;
           await updateAuthState(newSession);
           setLoading(false);
+        } else {
+          // Mismo usuario, solo refresh de token o re-foco de pestaña → actualizar sesión silenciosamente
+          setSession(newSession);
         }
       }
     );
