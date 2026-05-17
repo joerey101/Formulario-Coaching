@@ -23,7 +23,21 @@ export default function AdminPage() {
     try {
       const { data, error } = await supabase
         .from('respuestas')
-        .select('*')
+        .select(`
+          *,
+          asignaciones:asignacion_id (
+            id,
+            estado,
+            habilitado,
+            finalizado_at,
+            finalizado_por,
+            solicitud_reapertura_pendiente
+          ),
+          formularios:formulario_id (
+            codigo,
+            titulo
+          )
+        `)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
@@ -41,37 +55,111 @@ export default function AdminPage() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('¿Seguro que querés eliminar este registro?')) return;
+    if (!window.confirm('¿Eliminar este registro? Esta acción no se puede deshacer.')) return;
+    
     try {
-      const { error } = await supabase.from('respuestas').delete().eq('id', id);
-      if (error) {
-        alert(`Error de base de datos: ${error.message}`);
+      // Buscar la fila para obtener asignacion_id
+      const fila = respuestas.find(r => r.id === id);
+      const asignacionId = fila?.asignacion_id;
+      
+      console.log(`[ADMIN] Eliminando respuesta ${id} and asignación ${asignacionId}`);
+      
+      // 1. PRIMERO borrar respuestas (la tabla "hija")
+      const { error: errorResp } = await supabase
+        .from('respuestas')
+        .delete()
+        .eq('id', id);
+      
+      if (errorResp) {
+        console.error('[ADMIN] Error eliminando respuesta:', errorResp);
+        alert(`Error al eliminar respuesta: ${errorResp.message}`);
         return;
       }
-      setRespuestas(respuestas.filter(r => r.id !== id));
+      
+      // 2. DESPUÉS borrar la asignación (si existe)
+      if (asignacionId) {
+        const { error: errorAsig } = await supabase
+          .from('asignaciones')
+          .delete()
+          .eq('id', asignacionId);
+        
+        if (errorAsig) {
+          console.warn('[ADMIN] Respuesta eliminada pero asignación quedó huérfana:', errorAsig);
+          alert('Advertencia: registro eliminado parcialmente. Revisar manualmente la asignación.');
+        }
+      } else {
+        console.warn('[ADMIN] La respuesta no tenía asignacion_id vinculado, no se eliminó asignación');
+      }
+      
+      console.log('[ADMIN] Registro eliminado correctamente');
+      await fetchData();
+      setSelectedItem(null);
     } catch (err) {
+      console.error('[ADMIN] Error inesperado al eliminar:', err);
       alert('Error inesperado al eliminar');
     }
   };
 
   const handleReabrir = async (id) => {
     if (!window.confirm('¿Seguro que querés reabrir este formulario? El coachee podrá volver a editar sus respuestas.')) return;
+    
     try {
-      console.log(`[ADMIN] Reabriendo formulario ${id}`);
-      const { error } = await supabase
-        .from('respuestas')
-        .update({ estado: 'en_progreso', finalizado_at: null, finalizado_por: null })
-        .eq('id', id);
-          
-      if (error) {
-        alert(`Error al reabrir: ${error.message}`);
+      // Buscar la fila en el state para obtener asignacion_id
+      const fila = respuestas.find(r => r.id === id);
+      if (!fila?.asignacion_id) {
+        console.error('[ADMIN] No se encontró asignacion_id para la respuesta', id);
+        alert('Error: no se puede reabrir, falta vincular la asignación.');
         return;
       }
       
-      alert('Formulario reabierto exitosamente.');
-      setRespuestas(respuestas.map(r => r.id === id ? { ...r, estado: 'en_progreso', finalizado_at: null, finalizado_por: null } : r));
+      const asignacionId = fila.asignacion_id;
+      
+      console.log(`[ADMIN] Reabriendo formulario ${id} y asignación ${asignacionId}`);
+      
+      // 1. PRIMERO actualizar asignaciones (fuente de verdad)
+      const { error: errorAsig } = await supabase
+        .from('asignaciones')
+        .update({
+          estado: 'en_progreso',
+          finalizado_at: null,
+          finalizado_por: null,
+          solicitud_reapertura_pendiente: false,
+          solicitud_reapertura_nota: null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', asignacionId);
+      
+      if (errorAsig) {
+        console.error('[ADMIN] Error reabriendo asignación:', errorAsig);
+        alert(`Error al reabrir: ${errorAsig.message}`);
+        return; // ABORTAR: no tocar respuestas si asignaciones falla
+      }
+      
+      // 2. DESPUÉS actualizar respuestas (coherencia)
+      const { error: errorResp } = await supabase
+        .from('respuestas')
+        .update({
+          estado: 'en_progreso',
+          finalizado_at: null,
+          finalizado_por: null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', id);
+      
+      if (errorResp) {
+        // No abortar: la fuente de verdad ya está OK
+        console.warn('[ADMIN] Asignación reabierta pero respuestas quedó desincronizada:', errorResp);
+      }
+      
+      console.log('[ADMIN] Formulario reabierto correctamente');
+      
+      // Refetch del listado
+      await fetchData();
+      
+      alert('Formulario reabierto. El coachee ya puede modificar sus respuestas.');
       setSelectedItem(null);
     } catch (err) {
+      console.error('[ADMIN] Error inesperado al reabrir:', err);
       alert('Error inesperado al reabrir');
     }
   };
@@ -169,29 +257,32 @@ export default function AdminPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredData.map(item => (
-                  <tr key={item.id}>
-                    <td>{new Date(item.created_at).toLocaleDateString()}</td>
-                    <td><strong>{item.coachee_nombre} {item.coachee_apellido}</strong></td>
-                    <td className="text-muted">{item.email}</td>
-                    <td>{item.coach || '-'}</td>
-                    <td><span className="badge">{item.etapa}</span></td>
-                    <td>
-                      <span className={`badge ${item.estado === 'finalizado' ? 'badge--finalizado' : 'badge--en-progreso'}`}>
-                        {item.estado === 'finalizado' ? '🔒 Finalizado' : '✏️ En progreso'}
-                      </span>
-                    </td>
-                    <td style={{ textAlign: 'center' }}>
-                      <span className="score-pill">
-                        {item.respuestas?.satisfaccion_general_score || '-'}
-                      </span>
-                    </td>
-                    <td className="actions-cell">
-                      <button className="btn-icon" title="Ver Detalle" onClick={() => setSelectedItem(item)}>👁️</button>
-                      <button className="btn-icon delete" title="Borrar" onClick={() => handleDelete(item.id)}>🗑️</button>
-                    </td>
-                  </tr>
-                ))}
+                {filteredData.map(item => {
+                  const itemEstado = item.asignaciones?.estado || item.estado || 'en_progreso';
+                  return (
+                    <tr key={item.id}>
+                      <td>{new Date(item.created_at).toLocaleDateString()}</td>
+                      <td><strong>{item.coachee_nombre} {item.coachee_apellido}</strong></td>
+                      <td className="text-muted">{item.email}</td>
+                      <td>{item.coach || '-'}</td>
+                      <td><span className="badge">{item.etapa}</span></td>
+                      <td>
+                        <span className={`badge ${itemEstado === 'finalizado' ? 'badge--finalizado' : 'badge--en-progreso'}`}>
+                          {itemEstado === 'finalizado' ? '🔒 Finalizado' : '✏️ En progreso'}
+                        </span>
+                      </td>
+                      <td style={{ textAlign: 'center' }}>
+                        <span className="score-pill">
+                          {item.respuestas?.satisfaccion_general_score || '-'}
+                        </span>
+                      </td>
+                      <td className="actions-cell">
+                        <button className="btn-icon" title="Ver Detalle" onClick={() => setSelectedItem(item)}>👁️</button>
+                        <button className="btn-icon delete" title="Borrar" onClick={() => handleDelete(item.id)}>🗑️</button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
             {filteredData.length === 0 && <div className="empty-state">No se encontraron registros.</div>}
@@ -259,7 +350,7 @@ export default function AdminPage() {
               })}
             </div>
             <div className="modal-footer">
-              {selectedItem.estado === 'finalizado' && (
+              {(selectedItem.asignaciones?.estado || selectedItem.estado || 'en_progreso') === 'finalizado' && (
                 <button 
                   onClick={() => handleReabrir(selectedItem.id)} 
                   className="btn-reabrir"
