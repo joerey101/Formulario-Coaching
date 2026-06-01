@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { SECCIONES, SECCIONES_ORDEN } from '../lib/respuestasSchema';
+import { getFormularioConfig } from '../formularios/configs';
 import './AdminPage.css';
 
 export default function AdminPage() {
@@ -31,7 +32,8 @@ export default function AdminPage() {
             habilitado,
             finalizado_at,
             finalizado_por,
-            solicitud_reapertura_pendiente
+            solicitud_reapertura_pendiente,
+            coachee_user_id
           ),
           formularios:formulario_id (
             codigo,
@@ -41,7 +43,56 @@ export default function AdminPage() {
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      setRespuestas(data || []);
+
+      // Extract unique user_ids to fetch their coachee data
+      const userIds = [...new Set(
+        (data || [])
+          .map(r => r.asignaciones?.coachee_user_id || r.user_id)
+          .filter(Boolean)
+      )];
+
+      let coacheesDict = {};
+      if (userIds.length > 0) {
+        const { data: coacheesData, error: coacheesError } = await supabase
+          .from('coachees')
+          .select(`
+            user_id,
+            nombre,
+            apellido,
+            coach:coach_id (
+              nombre,
+              apellido
+            )
+          `)
+          .in('user_id', userIds);
+
+        if (!coacheesError && coacheesData) {
+          coacheesDict = coacheesData.reduce((acc, c) => {
+            acc[c.user_id] = {
+              nombre: c.nombre,
+              apellido: c.apellido,
+              coach_nombre: c.coach?.nombre,
+              coach_apellido: c.coach?.apellido
+            };
+            return acc;
+          }, {});
+        }
+      }
+
+      // Enrich respuestas with unified display properties
+      const enrichedData = (data || []).map(r => {
+        const uid = r.asignaciones?.coachee_user_id || r.user_id;
+        const cData = coacheesDict[uid] || {};
+        return {
+          ...r,
+          display_coachee_nombre: r.coachee_nombre || cData.nombre || '',
+          display_coachee_apellido: r.coachee_apellido || cData.apellido || '',
+          display_coach: r.coach || (cData.coach_nombre ? `${cData.coach_nombre} ${cData.coach_apellido}` : ''),
+          display_etapa: r.formularios?.titulo || r.etapa || ''
+        };
+      });
+
+      setRespuestas(enrichedData);
     } catch (err) {
       console.error('Error cargando datos:', err);
     } finally {
@@ -171,10 +222,10 @@ export default function AdminPage() {
     const headers = ['Fecha', 'Coachee', 'Email', 'Coach', 'Etapa', 'Satisfaccion General'];
     const rows = respuestas.map(r => [
       new Date(r.created_at).toLocaleDateString(),
-      `${r.coachee_nombre} ${r.coachee_apellido}`,
+      `${r.display_coachee_nombre} ${r.display_coachee_apellido}`.trim(),
       r.email,
-      r.coach,
-      r.etapa,
+      r.display_coach,
+      r.display_etapa,
       r.respuestas?.satisfaccion_general_score || ''
     ]);
 
@@ -192,7 +243,7 @@ export default function AdminPage() {
   };
 
   const filteredData = respuestas.filter(r => 
-    `${r.coachee_nombre} ${r.coachee_apellido} ${r.email}`.toLowerCase().includes(searchTerm.toLowerCase())
+    `${r.display_coachee_nombre} ${r.display_coachee_apellido} ${r.email}`.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -262,10 +313,10 @@ export default function AdminPage() {
                   return (
                     <tr key={item.id}>
                       <td>{new Date(item.created_at).toLocaleDateString()}</td>
-                      <td><strong>{item.coachee_nombre} {item.coachee_apellido}</strong></td>
+                      <td><strong>{item.display_coachee_nombre} {item.display_coachee_apellido}</strong></td>
                       <td className="text-muted">{item.email}</td>
-                      <td>{item.coach || '-'}</td>
-                      <td><span className="badge">{item.etapa}</span></td>
+                      <td>{item.display_coach || '-'}</td>
+                      <td><span className="badge">{item.display_etapa}</span></td>
                       <td>
                         <span className={`badge ${itemEstado === 'finalizado' ? 'badge--finalizado' : 'badge--en-progreso'}`}>
                           {itemEstado === 'finalizado' ? '🔒 Finalizado' : '✏️ En progreso'}
@@ -296,8 +347,8 @@ export default function AdminPage() {
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <div>
-                <h2>{selectedItem.coachee_nombre} {selectedItem.coachee_apellido}</h2>
-                <p className="subtitle">{selectedItem.email} · {selectedItem.etapa}</p>
+                <h2>{selectedItem.display_coachee_nombre} {selectedItem.display_coachee_apellido}</h2>
+                <p className="subtitle">{selectedItem.email} · {selectedItem.display_etapa}</p>
               </div>
               <button className="btn-close" onClick={() => setSelectedItem(null)}>&times;</button>
             </div>
@@ -311,43 +362,81 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              {SECCIONES_ORDEN.map(seccionKey => {
-                const seccion = SECCIONES[seccionKey];
-                const camposConValor = seccion.campos.filter(c => {
-                  const val = selectedItem.respuestas?.[c.key];
-                  return val !== undefined && val !== null && val !== '';
-                });
+              {(() => {
+                const codigo = selectedItem.formularios?.codigo;
                 
-                if (camposConValor.length === 0) return null;
-                
-                return (
-                  <div key={seccionKey} className="seccion-respuestas">
-                    <h3 className="seccion-titulo">{seccion.titulo}</h3>
-                    <p className="seccion-descripcion">{seccion.descripcion}</p>
-                    {camposConValor.map(campo => (
-                      <div key={campo.key} className="campo-respuesta">
-                        <label className="campo-label">{campo.label}</label>
-                        <div className="campo-valor">
-                          {campo.tipo === 'score' ? (
-                            <div className="score-bar-container">
-                              <div className="score-bar" style={{ width: `${selectedItem.respuestas[campo.key] * 10}%` }}></div>
-                              <span className="score-text">{selectedItem.respuestas[campo.key]} / 10</span>
+                // Path legacy: Yo Real-Actual (columnas individuales)
+                if (!codigo || codigo === 'yo_real_actual') {
+                  return SECCIONES_ORDEN.map(seccionKey => {
+                    const seccion = SECCIONES[seccionKey];
+                    const camposConValor = seccion.campos.filter(c => {
+                      const val = selectedItem.respuestas?.[c.key];
+                      return val !== undefined && val !== null && val !== '';
+                    });
+                    
+                    if (camposConValor.length === 0) return null;
+                    
+                    return (
+                      <div key={seccionKey} className="seccion-respuestas">
+                        <h3 className="seccion-titulo">{seccion.titulo}</h3>
+                        <p className="seccion-descripcion">{seccion.descripcion}</p>
+                        {camposConValor.map(campo => (
+                          <div key={campo.key} className="campo-respuesta">
+                            <label className="campo-label">{campo.label}</label>
+                            <div className="campo-valor">
+                              {campo.tipo === 'score' ? (
+                                <div className="score-bar-container">
+                                  <div className="score-bar" style={{ width: `${selectedItem.respuestas[campo.key] * 10}%` }}></div>
+                                  <span className="score-text">{selectedItem.respuestas[campo.key]} / 10</span>
+                                </div>
+                              ) : campo.tipo === 'lista' ? (
+                                <div className="lista-tags">
+                                  {(selectedItem.respuestas[campo.key] || []).map((item, i) => (
+                                    <span key={i} className="tag-item">{item}</span>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="texto-respuesta">{selectedItem.respuestas[campo.key]}</p>
+                              )}
                             </div>
-                          ) : campo.tipo === 'lista' ? (
-                            <div className="lista-tags">
-                              {(selectedItem.respuestas[campo.key] || []).map((item, i) => (
-                                <span key={i} className="tag-item">{item}</span>
-                              ))}
-                            </div>
-                          ) : (
-                            <p className="texto-respuesta">{selectedItem.respuestas[campo.key]}</p>
-                          )}
-                        </div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                );
-              })}
+                    );
+                  });
+                }
+                
+                // Path genérico: formularios JSONB (Seteo de Objetivos y futuros)
+                try {
+                  const formConfig = getFormularioConfig(codigo);
+                  const respuestas = selectedItem.respuestas_json || {};
+                  
+                  return formConfig.secciones.map(seccion => {
+                    const camposConValor = seccion.grupos
+                      .flatMap(g => g.campos.map(c => ({ ...c, grupoTitulo: g.titulo })))
+                      .filter(c => respuestas[c.name]?.toString().trim());
+                    
+                    if (camposConValor.length === 0) return null;
+                    
+                    return (
+                      <div key={seccion.id} className="seccion-respuestas">
+                        <h3 className="seccion-titulo">{seccion.titulo}</h3>
+                        {camposConValor.map(campo => (
+                          <div key={campo.name} className="campo-respuesta">
+                            <label className="campo-label">{campo.label}</label>
+                            <div className="campo-valor">
+                              <p className="texto-respuesta">{respuestas[campo.name]}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  });
+                } catch (err) {
+                  console.error('[ADMIN] Error cargando config para:', codigo, err);
+                  return <p className="text-muted">No se pudo cargar la configuración del formulario.</p>;
+                }
+              })()}
             </div>
             <div className="modal-footer">
               {(selectedItem.asignaciones?.estado || selectedItem.estado || 'en_progreso') === 'finalizado' && (

@@ -75,9 +75,20 @@ José Rey es el dueño de CONSCIENCIA, una plataforma de coaching de transformac
 - `FormContext` maneja N formularios
 - Configuración externa por formulario en `src/formularios/configs/`
 
+✅ **Fase 1.D Mínima — Coherencia del admin**
+- Fix del botón "Reabrir" (updatea asignaciones y respuestas)
+- Listado con JOIN a asignaciones
+- Badge de estado con fallbacks
+
+✅ **Fase B — Frontend: Formulario "Seteo de Objetivos"**
+- Creación de componentes genéricos (`SeccionGenerica`, `CampoTextarea`)
+- Implementación de almacenamiento `jsonb` en Supabase para formularios nuevos
+- Configuración declarativa con 13 secciones y 79 campos
+- Refactor de `AdminPage.jsx` para soporte nativo de renderizado JSON y joins a `coachees` para fallback de campos vacíos.
+
 ### Lo que está en backlog
 
-❌ **Fase 1.D — Panel del coach refactoreado**
+❌ **Fase 1.D Completa — Panel del coach refactoreado**
 Pestañas Mis Coachees / Mis Formularios, asignación de formularios, aprobar reaperturas.
 
 ❌ **Fase 1.E — Panel SuperAdmin con vista global**

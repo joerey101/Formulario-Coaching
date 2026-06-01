@@ -95,7 +95,7 @@ const FormularioContent = () => {
               subtitle={s.subtitulo}
               defaultOpen={s.defaultOpen}
             >
-              <Componente />
+              <Componente seccion={s} />
             </SectionCard>
           );
         })}

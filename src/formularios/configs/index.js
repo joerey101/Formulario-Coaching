@@ -1,7 +1,9 @@
 import { yoRealActualConfig } from './yo_real_actual';
+import { seteoObjetivosConfig } from './seteo_objetivos';
 
 const configs = {
   yo_real_actual: yoRealActualConfig,
+  seteo_objetivos: seteoObjetivosConfig,
 };
 
 export const getFormularioConfig = (codigo) => {

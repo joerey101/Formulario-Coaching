@@ -125,7 +125,10 @@ export const FormProvider = ({ children, codigo, asignacionId }) => {
         if (error) throw error;
         
         if (data) {
-          console.log('[FORM] Respuestas encontradas, cargando estado.');
+          // Seleccionar la fuente de respuestas según el storage de la config
+          const isJsonb = config.storage === 'jsonb';
+          const respuestasData = isJsonb ? (data.respuestas_json || {}) : (data.respuestas || {});
+          console.log(`[FORM] Respuestas encontradas (storage: ${isJsonb ? 'jsonb' : 'columns'}), cargando estado.`);
           setAll({
             meta: {
               coachee_nombre: data.coachee_nombre || '',
@@ -135,7 +138,7 @@ export const FormProvider = ({ children, codigo, asignacionId }) => {
               fecha: data.fecha || new Date().toISOString().slice(0, 10),
               etapa: data.etapa || config.titulo
             },
-            respuestas: data.respuestas || {}
+            respuestas: respuestasData
           });
           setEstado(data.estado || 'en_progreso');
           setFinalizadoAt(data.finalizado_at || null);
@@ -160,7 +163,8 @@ export const FormProvider = ({ children, codigo, asignacionId }) => {
         throw new Error('No hay una sesión de usuario activa. Por favor, volvé a ingresar.');
       }
 
-      console.log('[FORM] Intentando guardar datos para:', data.email, 'Asignación:', asignacionId);
+      const isJsonb = config.storage === 'jsonb';
+      console.log(`[FORM] Intentando guardar datos (storage: ${isJsonb ? 'jsonb' : 'columns'}) para:`, data.email, 'Asignación:', asignacionId);
 
       const payload = {
         user_id: data.user_id,
@@ -170,12 +174,18 @@ export const FormProvider = ({ children, codigo, asignacionId }) => {
         coach: data.coach,
         fecha: data.fecha,
         etapa: data.etapa,
-        respuestas: data.respuestas,
         formulario_id: formularioId,
         asignacion_id: asignacionId,
         estado: estado,
         updated_at: new Date().toISOString()
       };
+
+      // Guardar respuestas en la columna correspondiente según el storage
+      if (isJsonb) {
+        payload.respuestas_json = data.respuestas;
+      } else {
+        payload.respuestas = data.respuestas;
+      }
 
       const { error, data: result } = await supabase
         .from('respuestas')
